@@ -1,0 +1,88 @@
+# ==========================
+# Node.js / Backend
+# ==========================
+skitchen_backend/node_modules/
+skitchen_backend/.env
+skitchen_backend/.env.local
+skitchen_backend/.env.development
+skitchen_backend/.env.production
+skitchen_backend/public/uploads/
+skitchen_backend/public/temp/
+skitchen_backend/dist/
+skitchen_backend/logs/
+skitchen_backend/debug.log
+skitchen_backend/npm-debug.log*
+skitchen_backend/yarn-debug.log*
+skitchen_backend/yarn-error.log*
+
+# Sequelize auto-generated files
+skitchen_backend/src/migrations/
+skitchen_backend/src/seeders/
+skitchen_backend/src/models/index.js
+
+# ==========================
+# Frontend / React + Vite
+# ==========================
+skitchen_frontend/node_modules/
+skitchen_frontend/.env
+skitchen_frontend/.env.local
+skitchen_frontend/.env.development
+skitchen_frontend/.env.production
+skitchen_frontend/dist/
+skitchen_frontend/.vite/
+skitchen_frontend/.DS_Store
+
+# ==========================
+# System / OS Files
+# ==========================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+.idea/
+.vscode/
+*.swp
+*.swo
+*.log
+
+# ==========================
+# Environment & Secrets
+# ==========================
+.env
+.env.local
+.env.production
+.env.development
+*.pem
+*.key
+*.crt
+
+# ==========================
+# Build / Coverage / Cache
+# ==========================
+coverage/
+dist/
+build/
+.cache/
+tmp/
+temp/
+*.tsbuildinfo
+
+# ==========================
+# PM2 / Logs / PIDs
+# ==========================
+pids/
+*.pid
+*.seed
+*.pid.lock
+pm2.log
+*.log
+logs/
+
+# ==========================
+# Misc
+# ==========================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.tgz
+*.zip
