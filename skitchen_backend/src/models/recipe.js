@@ -3,16 +3,16 @@ export default (sequelize, DataTypes) => {
       "Recipe",
       {
         id: {
-          type: DataTypes.INTEGER,
-          autoIncrement: true,
+          type: DataTypes.UUID,
+          defaultValue: DataTypes.UUIDV4,
           primaryKey: true
         },
         menu_id: {
-          type: DataTypes.INTEGER,
+          type: DataTypes.UUID,
           allowNull: false
         },
         product_id: {
-          type: DataTypes.INTEGER,
+          type: DataTypes.UUID,
           allowNull: false
         },
         quantity_required: {
@@ -23,7 +23,7 @@ export default (sequelize, DataTypes) => {
           }
         },
         unit_id: {
-          type: DataTypes.INTEGER,
+          type: DataTypes.UUID,
           allowNull: false
         }
       },
