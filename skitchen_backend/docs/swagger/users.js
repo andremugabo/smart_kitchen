@@ -7,7 +7,7 @@
 
 /**
  * @swagger
- * /users:
+ * /api/users:
  *   post:
  *     summary: Register a new user
  *     tags: [Users]
@@ -48,7 +48,7 @@
 
 /**
  * @swagger
- * /users/login:
+ * /api/users/login:
  *   post:
  *     summary: Log in a user
  *     tags: [Users]
@@ -79,7 +79,7 @@
 
 /**
  * @swagger
- * /users:
+ * /api/users:
  *   get:
  *     summary: Get all users
  *     tags: [Users]
@@ -95,7 +95,7 @@
 
 /**
  * @swagger
- * /users/{id}:
+ * /api/users/{id}:
  *   get:
  *     summary: Get a single user by ID
  *     tags: [Users]
@@ -167,7 +167,7 @@
 
 /**
  * @swagger
- * /users/{id}/password:
+ * /api/users/{id}/password:
  *   put:
  *     summary: Update password for a user
  *     tags: [Users]
@@ -207,7 +207,7 @@
 
 /**
  * @swagger
- * /users/password/otp:
+ * /api/users/password/otp:
  *   post:
  *     summary: Send OTP to reset password
  *     tags: [Users]
@@ -234,7 +234,7 @@
 
 /**
  * @swagger
- * /users/password/reset:
+ * /api/users/password/reset:
  *   post:
  *     summary: Reset password after OTP verification
  *     tags: [Users]
@@ -268,7 +268,7 @@
 
 /**
  * @swagger
- * /users/{id}/image:
+ * /api/users/{id}/image:
  *   put:
  *     summary: Update profile image
  *     tags: [Users]
@@ -288,7 +288,7 @@
  *           schema:
  *             type: object
  *             properties:
- *               profileImage:
+ *               image:
  *                 type: string
  *                 format: binary
  *     responses:
@@ -302,7 +302,7 @@
 
 /**
  * @swagger
- * /users/{id}/status:
+ * /api/users/{id}/status:
  *   put:
  *     summary: Activate or deactivate a user
  *     tags: [Users]

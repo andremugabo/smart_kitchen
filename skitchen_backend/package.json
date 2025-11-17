@@ -28,7 +28,7 @@
     "pg-hstore": "^2.3.4",
     "redis": "^5.9.0",
     "sequelize": "^6.37.7",
-    "sharp": "^0.34.4",
+    "sharp": "^0.34.5",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^13.0.0"

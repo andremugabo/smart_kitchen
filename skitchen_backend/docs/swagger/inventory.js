@@ -7,7 +7,7 @@
 
 /**
  * @swagger
- * /inventory:
+ * /api/inventory:
  *   get:
  *     tags: [Inventory]
  *     summary: List inventory entries
@@ -18,7 +18,7 @@
 
 /**
  * @swagger
- * /inventory/{product_id}:
+ * /api/inventory/{product_id}:
  *   get:
  *     tags: [Inventory]
  *     summary: Get inventory by product
@@ -38,7 +38,7 @@
 
 /**
  * @swagger
- * /inventory/{product_id}/set:
+ * /api/inventory/{product_id}/set:
  *   put:
  *     tags: [Inventory]
  *     summary: Set inventory quantity for product
@@ -69,7 +69,7 @@
 
 /**
  * @swagger
- * /inventory/{product_id}/increment:
+ * /api/inventory/{product_id}/increment:
  *   patch:
  *     tags: [Inventory]
  *     summary: Increase inventory quantity for product
@@ -100,7 +100,7 @@
 
 /**
  * @swagger
- * /inventory/{product_id}/decrement:
+ * /api/inventory/{product_id}/decrement:
  *   patch:
  *     tags: [Inventory]
  *     summary: Decrease inventory quantity for product

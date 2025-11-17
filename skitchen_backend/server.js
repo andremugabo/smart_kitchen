@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import errorHandler from './src/middleware/errorHandler.js';
 
 // Convert __dirname for ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -25,6 +26,15 @@ import productCategoryRoutes from './src/routes/productCategoryRoutes.js';
 import productRoutes from './src/routes/productRoutes.js';
 import purchaseHistoryRoutes from './src/routes/purchaseHistoryRoutes.js';
 import inventoryRoutes from './src/routes/inventoryRoutes.js';
+import unitRoutes from './src/routes/unitRoutes.js';
+import menuCategoryRoutes from './src/routes/menuCategoryRoutes.js';
+import recipeRoutes from './src/routes/recipeRoutes.js';
+import menuRoutes from './src/routes/menuRoutes.js';
+import orderRoutes from './src/routes/orderRoutes.js';
+import orderDetailRoutes from './src/routes/orderDetailRoutes.js';
+import notificationRoutes from './src/routes/notificationRoutes.js';
+import reportRoutes from './src/routes/reportRoutes.js';
+import paymentRoutes from './src/routes/paymentRoutes.js';
 
 app.use(express.json());
 
@@ -42,16 +52,27 @@ app.use('/uploads', express.static(path.join(__dirname,'uploads')));
 setupSwagger(app);
 
 // Mount routes
-app.use('/users', userRoutes);
-app.use('/product-types', productTypeRoutes);
-app.use('/product-categories', productCategoryRoutes);
-app.use('/products', productRoutes);
-app.use('/purchases', purchaseHistoryRoutes);
-app.use('/inventory', inventoryRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/product-types', productTypeRoutes);
+app.use('/api/product-categories', productCategoryRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/purchases', purchaseHistoryRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/units', unitRoutes);
+app.use('/api/menu-categories', menuCategoryRoutes);
+app.use('/api/recipes', recipeRoutes);
+app.use('/api/menus', menuRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/order-details', orderDetailRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Health check
 app.get('/', (req, res) => {
     res.send('Smart Kitchen Backend is Healthy !! 💥');
 });
+
+app.use(errorHandler);
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

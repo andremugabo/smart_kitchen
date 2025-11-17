@@ -18,7 +18,7 @@ skitchen_backend/yarn-error.log*
 # Sequelize auto-generated files
 skitchen_backend/src/migrations/
 skitchen_backend/src/seeders/
-skitchen_backend/src/models/index.js
+# skitchen_backend/src/models/index.js
 
 # ==========================
 # Frontend / React + Vite

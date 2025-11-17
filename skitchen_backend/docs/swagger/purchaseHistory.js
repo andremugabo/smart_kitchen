@@ -7,7 +7,7 @@
 
 /**
  * @swagger
- * /purchases:
+ * /api/purchases:
  *   get:
  *     tags: [PurchaseHistory]
  *     summary: List purchases
@@ -59,7 +59,7 @@
 
 /**
  * @swagger
- * /purchases/{id}:
+ * /api/purchases/{id}:
  *   get:
  *     tags: [PurchaseHistory]
  *     summary: Get a purchase record

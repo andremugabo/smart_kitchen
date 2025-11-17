@@ -7,7 +7,7 @@
 
 /**
  * @swagger
- * /product-categories:
+ * /api/product-categories:
  *   get:
  *     tags: [ProductCategories]
  *     summary: List product categories
@@ -40,7 +40,7 @@
 
 /**
  * @swagger
- * /product-categories/{id}:
+ * /api/product-categories/{id}:
  *   get:
  *     tags: [ProductCategories]
  *     summary: Get a product category

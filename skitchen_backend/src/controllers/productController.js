@@ -8,8 +8,19 @@ import {
 
 export const listProductsController = async (req, res) => {
   try {
-    const items = await listProducts();
-    res.json({ success: true, data: items });
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
+    const { rows, count } = await listProducts(page, limit);
+    res.json({
+      success: true,
+      data: rows,
+      meta: {
+        page,
+        limit,
+        total: count,
+        totalPages: Math.ceil(count / limit) || 1,
+      },
+    });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
   }
@@ -26,10 +37,11 @@ export const getProductController = async (req, res) => {
 
 export const createProductController = async (req, res) => {
   try {
-    const { name, picture, min_stock_threshold, category_id, purchasing_unit_id, selling_unit_id, isActive } = req.body;
+    const { name, min_stock_threshold, category_id, purchasing_unit_id, selling_unit_id, isActive } = req.body;
     if (!name || !category_id) {
       return res.status(400).json({ success: false, error: "name and category_id are required" });
     }
+    const picture = req.savedImagePath ?? req.body.picture ?? null;
     const item = await createProduct({ name, picture, min_stock_threshold, category_id, purchasing_unit_id, selling_unit_id, isActive });
     res.status(201).json({ success: true, data: item });
   } catch (e) {
@@ -39,7 +51,11 @@ export const createProductController = async (req, res) => {
 
 export const updateProductController = async (req, res) => {
   try {
-    const item = await updateProduct(req.params.id, req.body);
+    const data = { ...req.body };
+    if (req.savedImagePath) {
+      data.picture = req.savedImagePath;
+    }
+    const item = await updateProduct(req.params.id, data);
     res.json({ success: true, data: item });
   } catch (e) {
     res.status(400).json({ success: false, error: e.message });

@@ -7,7 +7,7 @@
 
 /**
  * @swagger
- * /products:
+ * /api/products:
  *   get:
  *     tags: [Products]
  *     summary: List products
@@ -45,6 +45,30 @@
  *                 format: uuid
  *               isActive:
  *                 type: boolean
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required: [name, category_id]
+ *             properties:
+ *               name:
+ *                 type: string
+ *               picture:
+ *                 type: string
+ *                 format: binary
+ *               min_stock_threshold:
+ *                 type: number
+ *                 format: float
+ *               category_id:
+ *                 type: string
+ *                 format: uuid
+ *               purchasing_unit_id:
+ *                 type: string
+ *                 format: uuid
+ *               selling_unit_id:
+ *                 type: string
+ *                 format: uuid
+ *               isActive:
+ *                 type: boolean
  *     responses:
  *       201:
  *         description: Created
@@ -56,7 +80,7 @@
 
 /**
  * @swagger
- * /products/{id}:
+ * /api/products/{id}:
  *   get:
  *     tags: [Products]
  *     summary: Get a product
@@ -95,6 +119,29 @@
  *                 type: string
  *               picture:
  *                 type: string
+ *               min_stock_threshold:
+ *                 type: number
+ *                 format: float
+ *               category_id:
+ *                 type: string
+ *                 format: uuid
+ *               purchasing_unit_id:
+ *                 type: string
+ *                 format: uuid
+ *               selling_unit_id:
+ *                 type: string
+ *                 format: uuid
+ *               isActive:
+ *                 type: boolean
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               picture:
+ *                 type: string
+ *                 format: binary
  *               min_stock_threshold:
  *                 type: number
  *                 format: float

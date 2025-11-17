@@ -7,6 +7,10 @@ export default (sequelize, DataTypes) => {
       category_id: { type: DataTypes.UUID, allowNull: false },
       purchasing_unit_id: { type: DataTypes.UUID, allowNull: true },
       selling_unit_id: { type: DataTypes.UUID, allowNull: true },
+      conversion_factor: {
+        type: DataTypes.DECIMAL(10, 4),
+        allowNull: true, // or false with default
+      },
       isActive: {type: DataTypes.BOOLEAN, defaultValue: true },
       created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
       updated_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },

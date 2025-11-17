@@ -1,4 +1,3 @@
-import multer from "multer";
 import {
   createUser,
   loginUser,
@@ -12,21 +11,6 @@ import {
   toggleUserActive,
   deleteUser,
 } from "../services/userService.js";
-
-// ---------------------------
-// MULTER SETUP FOR PROFILE IMAGES
-// ---------------------------
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/users/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname);
-  },
-});
-
-export const uploadProfileImage = multer({ storage });
 
 // ---------------------------
 // CREATE USER
@@ -174,10 +158,10 @@ export const verifyOtpController = async (req, res) => {
 // ---------------------------
 export const updateImageController = async (req, res) => {
   try {
-    if (!req.file || !req.file.path) {
+    if (!req.savedImagePath) {
       return res.status(400).json({ success: false, error: "No image uploaded" });
     }
-    const imagePath = req.file.path; // multer handles file upload
+    const imagePath = req.savedImagePath;
     const user = await updateUserImage(req.params.id, imagePath);
     const { password_hash, ...safeUser } = user.toJSON();
     res.json({ success: true, user: safeUser });

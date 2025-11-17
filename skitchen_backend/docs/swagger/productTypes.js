@@ -7,7 +7,7 @@
 
 /**
  * @swagger
- * /product-types:
+ * /api/product-types:
  *   get:
  *     tags: [ProductTypes]
  *     summary: List product types
@@ -42,7 +42,7 @@
 
 /**
  * @swagger
- * /product-types/{id}:
+ * /api/product-types/{id}:
  *   get:
  *     tags: [ProductTypes]
  *     summary: Get a product type

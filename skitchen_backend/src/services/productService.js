@@ -1,7 +1,13 @@
 import { Product } from "../models/index.js";
 
-export const listProducts = async () => {
-  return Product.findAll({ order: [["created_at", "DESC"]] });
+export const listProducts = async (page = 1, limit = 20) => {
+  const offset = (page - 1) * limit;
+  const { rows, count } = await Product.findAndCountAll({
+    order: [["created_at", "DESC"]],
+    limit,
+    offset,
+  });
+  return { rows, count };
 };
 
 export const getProduct = async (id) => {
