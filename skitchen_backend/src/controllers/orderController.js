@@ -4,6 +4,8 @@ import {
   createOrder,
   updateOrderStatus,
   deleteOrder,
+  getKitchenOrders,
+  getCurrentWaiterOrders,
 } from "../services/orderService.js";
 
 export const listOrdersController = async (req, res) => {
@@ -59,6 +61,30 @@ export const deleteOrderController = async (req, res) => {
   try {
     await deleteOrder(req.params.id);
     res.json({ success: true, message: "Deleted" });
+  } catch (e) {
+    res.status(400).json({ success: false, error: e.message });
+  }
+};
+
+export const getKitchenOrdersController = async (req, res) => {
+  try {
+    const data = await getKitchenOrders();
+    res.json({ success: true, data });
+  } catch (e) {
+    res.status(400).json({ success: false, error: e.message });
+  }
+};
+
+export const getCurrentWaiterOrdersController = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ success: false, error: "Unauthorized: missing user" });
+    }
+    const data = await getCurrentWaiterOrders(userId);
+    res.json({ success: true, data });
   } catch (e) {
     res.status(400).json({ success: false, error: e.message });
   }

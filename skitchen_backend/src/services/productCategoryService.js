@@ -11,12 +11,12 @@ export const getProductCategory = async (id) => {
 };
 
 export const createProductCategory = async (data) => {
-  return ProductCategory.create({ name: data.name });
+  return ProductCategory.create({ name: data.name, type_id: data.type_id });
 };
 
 export const updateProductCategory = async (id, data) => {
   const item = await getProductCategory(id);
-  await item.update({ name: data.name });
+  await item.update({ name: data.name, type_id: data.type_id });
   return item;
 };
 

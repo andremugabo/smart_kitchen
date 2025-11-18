@@ -1,12 +1,43 @@
-import React from 'react'
-import { Outlet  } from 'react-router-dom'
+import React, { useState } from "react";
+import { Outlet } from "react-router-dom";
+import { Sidebar, Topbar } from "../components";
+
+const adminLinks = [
+  { label: "Dashboard", path: "/app/admin" },
+  { label: "Orders", path: "/app/admin/orders" },
+  { label: "Recipes", path: "/app/admin/recipes" },
+  { label: "Products", path: "/app/admin/products" },
+  { label: "Product Types", path: "/app/admin/product-types" },
+  { label: "Product Categories", path: "/app/admin/product-categories" },
+  { label: "Menu Categories", path: "/app/admin/menu-categories" },
+  { label: "Units", path: "/app/admin/units" },
+  { label: "Users", path: "/app/admin/users" },
+  { label: "Inventory", path: "/app/admin/inventory" },
+  { label: "Purchase History", path: "/app/admin/purchase-history" },
+  { label: "Reports", path: "/app/admin/reports" },
+  { label: "Payments", path: "/app/admin/payments" },
+  { label: "Settings", path: "/app/admin/settings" },
+];
 
 const AdminLayouts = () => {
-  return (
-    <div>
-        <Outlet/>
-    </div>
-  )
-}
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-export default AdminLayouts
+  return (
+    <div className="flex min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black">
+      <Sidebar
+        brand="Smart Kitchen"
+        links={adminLinks}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
+      <div className="flex-1 flex flex-col ml-0 lg:ml-64">
+        <Topbar onMenuClick={() => setSidebarOpen(true)} />
+        <main className="flex-1">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default AdminLayouts;

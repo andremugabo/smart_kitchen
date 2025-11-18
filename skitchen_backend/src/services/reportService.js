@@ -86,3 +86,29 @@ export const getPurchaseSummary = async ({ from, to }) => {
     totalPurchases: purchases.length,
   };
 };
+
+export const getSalesOverTime = async ({ from, to }) => {
+  const where = {};
+  if (from || to) {
+    where.order_date = {};
+    if (from) where.order_date[Op.gte] = new Date(from);
+    if (to) where.order_date[Op.lte] = new Date(to);
+  }
+
+  const orders = await Order.findAll({ where });
+
+  const map = new Map();
+
+  for (const o of orders) {
+    const d = o.order_date ? new Date(o.order_date) : new Date();
+    const key = d.toISOString().slice(0, 10); // YYYY-MM-DD
+    if (!map.has(key)) {
+      map.set(key, { date: key, totalRevenue: 0, totalOrders: 0 });
+    }
+    const entry = map.get(key);
+    entry.totalRevenue += Number(o.total_amount || 0);
+    entry.totalOrders += 1;
+  }
+
+  return Array.from(map.values()).sort((a, b) => (a.date < b.date ? -1 : 1));
+};

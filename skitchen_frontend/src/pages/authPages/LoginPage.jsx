@@ -24,9 +24,24 @@ const LoginPage = () => {
       }
       if (data?.user) {
         localStorage.setItem("userId", data.user.id);
+        localStorage.setItem("user", JSON.stringify(data.user));
         dispatch(setUser(data.user));
+
+        const role = (data.user.role || "").toLowerCase();
+        if (role === "admin") {
+          navigate("/app/admin");
+        } else if (role === "manager") {
+          navigate("/app/manager");
+        } else if (role === "chef") {
+          navigate("/app/chef");
+        } else if (role === "waiter") {
+          navigate("/app/waiter");
+        } else {
+          navigate("/");
+        }
+      } else {
+        navigate("/");
       }
-      navigate("/");
     } catch (err) {
       const message = err?.response?.data?.error || "Login failed";
       setError(message);

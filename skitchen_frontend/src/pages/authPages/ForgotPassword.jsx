@@ -45,9 +45,19 @@ const ForgotPassword = () => {
           required
         />
 
-        <Button type="submit" disabled={loading} className="w-full mt-4">
-          {loading ? "Sending..." : "Send OTP"}
-        </Button>
+        <div className="flex flex-col gap-2 mt-4">
+          <Button type="submit" disabled={loading} className="w-full">
+            {loading ? "Sending..." : "Send OTP"}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full text-xs"
+            onClick={() => navigate("/login")}
+          >
+            Back to login
+          </Button>
+        </div>
       </form>
     </AuthShell>
   );

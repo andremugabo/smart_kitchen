@@ -72,3 +72,25 @@
  *       200:
  *         description: Purchase summary
  */
+
+/**
+ * @swagger
+ * /api/reports/sales-over-time:
+ *   get:
+ *     summary: Get sales aggregated per day between optional dates
+ *     tags: [Reports]
+ *     parameters:
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Array of points with date, totalRevenue and totalOrders
+ */

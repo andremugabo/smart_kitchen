@@ -26,9 +26,13 @@ export const getProductCategoryController = async (req, res) => {
 
 export const createProductCategoryController = async (req, res) => {
   try {
-    const { name } = req.body;
-    if (!name) return res.status(400).json({ success: false, error: "name is required" });
-    const item = await createProductCategory({ name });
+    const { name, type_id } = req.body;
+    if (!name || !type_id) {
+      return res
+        .status(400)
+        .json({ success: false, error: "name and type_id are required" });
+    }
+    const item = await createProductCategory({ name, type_id });
     res.status(201).json({ success: true, data: item });
   } catch (e) {
     res.status(400).json({ success: false, error: e.message });
@@ -37,8 +41,8 @@ export const createProductCategoryController = async (req, res) => {
 
 export const updateProductCategoryController = async (req, res) => {
   try {
-    const { name } = req.body;
-    const item = await updateProductCategory(req.params.id, { name });
+    const { name, type_id } = req.body;
+    const item = await updateProductCategory(req.params.id, { name, type_id });
     res.json({ success: true, data: item });
   } catch (e) {
     res.status(400).json({ success: false, error: e.message });

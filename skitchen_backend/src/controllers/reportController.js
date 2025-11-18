@@ -2,6 +2,7 @@ import {
   getSalesSummary,
   getMenuPerformance,
   getPurchaseSummary,
+  getSalesOverTime,
 } from "../services/reportService.js";
 
 export const getSalesSummaryController = async (req, res) => {
@@ -28,6 +29,16 @@ export const getPurchaseSummaryController = async (req, res) => {
   try {
     const { from, to } = req.query;
     const data = await getPurchaseSummary({ from, to });
+    res.json({ success: true, data });
+  } catch (e) {
+    res.status(400).json({ success: false, error: e.message });
+  }
+};
+
+export const getSalesOverTimeController = async (req, res) => {
+  try {
+    const { from, to } = req.query;
+    const data = await getSalesOverTime({ from, to });
     res.json({ success: true, data });
   } catch (e) {
     res.status(400).json({ success: false, error: e.message });

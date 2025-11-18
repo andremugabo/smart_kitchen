@@ -10,6 +10,11 @@ export const register = async (payload) => {
   return res.data;
 };
 
+export const listUsers = async () => {
+  const res = await api.get("/users");
+  return res.data;
+};
+
 export const requestPasswordOtp = async (email) => {
   const res = await api.post("/users/password/otp", { email });
   return res.data;
@@ -44,4 +49,15 @@ export const updateProfileImage = async (id, file) => {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return res.data;
+};
+
+export const toggleUserStatus = async (id, isActive) => {
+  const res = await api.put(`/users/${id}/status`, { isActive });
+  return res.data;
+};
+
+export const logout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("userId");
+  localStorage.removeItem("user");
 };

@@ -113,3 +113,25 @@
  *       200:
  *         description: Updated order
  */
+
+/**
+ * @swagger
+ * /api/orders/kitchen:
+ *   get:
+ *     summary: List active orders for the kitchen (pending and in_progress)
+ *     tags: [Orders]
+ *     responses:
+ *       200:
+ *         description: List of active orders with their items
+ */
+
+/**
+ * @swagger
+ * /api/orders/waiter/current:
+ *   get:
+ *     summary: Get the current waiter's open orders and stats
+ *     tags: [Orders]
+ *     responses:
+ *       200:
+ *         description: Stats and list of open orders for the logged-in waiter
+ */

@@ -1,4 +1,5 @@
 import { Order, OrderDetail, Menu, Notification, User } from "../models/index.js";
+import { Op } from "sequelize";
 
 export const listOrders = async () => {
   return Order.findAll({ order: [["order_date", "DESC"]] });
@@ -105,4 +106,68 @@ export const deleteOrder = async (id) => {
   await OrderDetail.destroy({ where: { order_id: id } });
   await order.destroy();
   return { id };
+};
+
+export const getKitchenOrders = async () => {
+  const activeStatuses = ["pending", "in_progress"];
+  const orders = await Order.findAll({
+    where: {
+      status: { [Op.in]: activeStatuses },
+    },
+    order: [["order_date", "ASC"]],
+    include: [
+      {
+        model: OrderDetail,
+        include: [{ model: Menu }],
+      },
+    ],
+  });
+
+  return orders.map((o) => ({
+    id: o.id,
+    tableNumber: o.table_number,
+    status: o.status,
+    orderDate: o.order_date,
+    totalAmount: o.total_amount,
+    items: (o.OrderDetails || []).map((d) => ({
+      id: d.id,
+      menuId: d.menu_id,
+      name: d.Menu ? d.Menu.name : null,
+      quantity: d.quantity,
+      kitchenNote: d.kitchen_note,
+    })),
+  }));
+};
+
+export const getCurrentWaiterOrders = async (userId) => {
+  const activeStatuses = ["pending", "in_progress"];
+
+  const orders = await Order.findAll({
+    where: {
+      user_id: userId,
+      status: { [Op.in]: activeStatuses },
+    },
+    order: [["order_date", "ASC"]],
+  });
+
+  const tables = new Set();
+  for (const o of orders) {
+    if (o.table_number) {
+      tables.add(o.table_number);
+    }
+  }
+
+  return {
+    stats: {
+      tablesAssigned: tables.size,
+      openOrdersCount: orders.length,
+    },
+    openOrders: orders.map((o) => ({
+      id: o.id,
+      tableNumber: o.table_number,
+      status: o.status,
+      totalAmount: o.total_amount,
+      orderDate: o.order_date,
+    })),
+  };
 };
