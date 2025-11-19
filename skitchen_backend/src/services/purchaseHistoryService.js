@@ -1,4 +1,5 @@
 import { PurchaseHistory, Product, User } from "../models/index.js";
+import { incrementInventory } from "./inventoryService.js";
 
 export const listPurchases = async () => {
   return PurchaseHistory.findAll({ order: [["purchase_date", "DESC"]] });
@@ -31,5 +32,12 @@ export const createPurchase = async ({ product_id, user_id, quantity, price_per_
     proof_image,
   };
 
-  return PurchaseHistory.create(payload);
+  const purchase = await PurchaseHistory.create(payload);
+
+  // Update inventory: create or increment quantity for this product
+  if (quantity != null) {
+    await incrementInventory(product_id, quantity);
+  }
+
+  return purchase;
 };

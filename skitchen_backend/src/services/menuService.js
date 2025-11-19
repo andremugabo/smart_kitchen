@@ -78,6 +78,8 @@ export const calculateMenuCost = async (menuId) => {
     totalCost += qty * costPerRecipeUnit;
   }
 
+  await menu.update({ estimated_cost: totalCost });
+
   return { menu, cost: totalCost };
 };
 

@@ -6,6 +6,7 @@ class AuthStorage {
   static const _usernameKey = 'auth_username';
   static const _pictureKey = 'auth_picture';
   static const _emailKey = 'auth_email';
+  static const _userIdKey = 'auth_user_id';
 
   static Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
@@ -57,6 +58,16 @@ class AuthStorage {
     return prefs.getString(_emailKey);
   }
 
+  static Future<void> saveUserId(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_userIdKey, id);
+  }
+
+  static Future<String?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_userIdKey);
+  }
+
   static Future<void> clear() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
@@ -64,5 +75,6 @@ class AuthStorage {
     await prefs.remove(_usernameKey);
     await prefs.remove(_pictureKey);
     await prefs.remove(_emailKey);
+    await prefs.remove(_userIdKey);
   }
 }

@@ -4,15 +4,18 @@ import { Sidebar, Topbar } from "../components";
 
 const managerLinks = [
   { label: "Dashboard", path: "/app/manager" },
-  { label: "Orders", path: "/app/manager/orders" },
-  { label: "Recipes", path: "/app/manager/recipes" },
-  { label: "Inventory", path: "/app/manager/inventory" },
-  { label: "Purchase History", path: "/app/manager/purchase-history" },
-  { label: "Reports", path: "/app/manager/reports" },
-  { label: "Payments", path: "/app/manager/payments" },
+  { label: "Units", path: "/app/manager/units" },
   { label: "Product Types", path: "/app/manager/product-types" },
   { label: "Product Categories", path: "/app/manager/product-categories" },
-  { label: "Units", path: "/app/manager/units" },
+  { label: "Products", path: "/app/manager/products" },
+  { label: "Purchase History", path: "/app/manager/purchase-history" },
+  { label: "Inventory", path: "/app/manager/inventory" },
+  { label: "Recipes", path: "/app/manager/recipes" },
+  { label: "Menu Categories", path: "/app/manager/menu-categories" },
+  { label: "Menu", path: "/app/manager/menu" },
+  { label: "Orders", path: "/app/manager/orders" },
+  { label: "Payments", path: "/app/manager/payments" },
+  { label: "Reports", path: "/app/manager/reports" },
 ];
 
 const ManagerLayouts = () => {

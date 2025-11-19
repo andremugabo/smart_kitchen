@@ -34,4 +34,5 @@ export { default as ManagerDashboard } from './managerPages/ManagerDashboard'
 
 // Waiter pages
 export { default as WaiterDashboard } from './waiterPages/WaiterDashboard'
-
+export { default as WaiterOrdersPage } from './waiterPages/WaiterOrdersPage'
+export { default as WaiterInventoryPage } from './waiterPages/WaiterInventoryPage'

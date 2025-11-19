@@ -1,4 +1,5 @@
-import { Order, OrderDetail, Menu, Notification, User } from "../models/index.js";
+import { Order, OrderDetail, Menu, Notification, User, Recipe, Product } from "../models/index.js";
+import { decrementInventory } from "./inventoryService.js";
 import { Op } from "sequelize";
 
 export const listOrders = async () => {
@@ -44,11 +45,13 @@ export const createOrder = async ({ user_id, table_number, items }) => {
     for (const item of items) {
       const menu = menus.find((m) => m.id === item.menu_id);
       if (!menu) continue;
+
       const quantity = Number(item.quantity ?? 1);
       const priceAtTime = Number(menu.price);
       const lineTotal = priceAtTime * quantity;
       total += lineTotal;
 
+      // Create order detail row
       await OrderDetail.create(
         {
           order_id: createdOrder.id,
@@ -59,6 +62,41 @@ export const createOrder = async ({ user_id, table_number, items }) => {
         },
         { transaction: t }
       );
+
+      // Deduct inventory based on this menu's recipe
+      // Note: do not use FOR UPDATE lock on the Product side of an outer join,
+      // as some databases (e.g. Postgres) do not allow that. The surrounding
+      // transaction is sufficient for consistency here.
+      const recipes = await Recipe.findAll({
+        where: { menu_id: menu.id },
+        include: [{ model: Product }],
+        transaction: t,
+      });
+
+      for (const recipe of recipes) {
+        const product = recipe.Product;
+        if (!product) continue;
+
+        const recipeQty = Number(recipe.quantity_required);
+        if (!recipeQty || Number.isNaN(recipeQty)) continue;
+
+        const totalRecipeQty = recipeQty * quantity; // quantity required for this order
+
+        // conversion_factor: how many recipe units per inventory unit (purchasing/selling)
+        const conversionFactor = Number(product.conversion_factor || 1);
+        const inventoryQty = conversionFactor > 0 ? totalRecipeQty / conversionFactor : totalRecipeQty;
+
+        if (inventoryQty > 0) {
+          try {
+            await decrementInventory(product.id, inventoryQty);
+          } catch (e) {
+            if (e && (e.message === "Insufficient inventory" || e.message === "Inventory record not found")) {
+              throw new Error(`Insufficient inventory for product ${product.name}`);
+            }
+            throw e;
+          }
+        }
+      }
     }
 
     await createdOrder.update({ total_amount: total }, { transaction: t });
@@ -109,7 +147,7 @@ export const deleteOrder = async (id) => {
 };
 
 export const getKitchenOrders = async () => {
-  const activeStatuses = ["pending", "in_progress"];
+  const activeStatuses = ["pending", "preparing"];
   const orders = await Order.findAll({
     where: {
       status: { [Op.in]: activeStatuses },
@@ -140,7 +178,7 @@ export const getKitchenOrders = async () => {
 };
 
 export const getCurrentWaiterOrders = async (userId) => {
-  const activeStatuses = ["pending", "in_progress"];
+  const activeStatuses = ["pending", "preparing"];
 
   const orders = await Order.findAll({
     where: {

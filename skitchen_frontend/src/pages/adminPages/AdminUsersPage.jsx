@@ -25,7 +25,7 @@ const AdminUsersPage = () => {
     setError("");
     try {
       const res = await listUsers();
-      setUsers(res.data || []);
+      setUsers(res || []);
     } catch (err) {
       const msg = err?.response?.data?.error || "Failed to load users";
       setError(msg);
@@ -245,7 +245,33 @@ const AdminUsersPage = () => {
                       key={u.id}
                       className="border-b border-slate-900 hover:bg-slate-900/40"
                     >
-                      <td className="px-2 py-2">{u.username || "-"}</td>
+                      <td className="px-2 py-2">
+                        <div className="flex items-center gap-2">
+                          {u.picture ? (
+                            <img
+                              src={
+                                u.picture.startsWith("http")
+                                  ? u.picture
+                                  : (() => {
+                                      const rawBase = import.meta.env.VITE_API_BASE_URL || "";
+                                      const base = rawBase.endsWith("/api")
+                                        ? rawBase.slice(0, -4)
+                                        : rawBase;
+                                      const cleanedPath = u.picture.replace(/^\//, "");
+                                      return `${base}/${cleanedPath}`;
+                                    })()
+                              }
+                              alt={u.username || "User"}
+                              className="w-7 h-7 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-[11px] font-semibold uppercase">
+                              {(u.username || "-").charAt(0)}
+                            </div>
+                          )}
+                          <span>{u.username || "-"}</span>
+                        </div>
+                      </td>
                       <td className="px-2 py-2">{u.email || "-"}</td>
                       <td className="px-2 py-2">{u.role || "-"}</td>
                       <td className="px-2 py-2">

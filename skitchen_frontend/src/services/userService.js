@@ -12,7 +12,7 @@ export const register = async (payload) => {
 
 export const listUsers = async () => {
   const res = await api.get("/users");
-  return res.data;
+  return res.data.users;
 };
 
 export const requestPasswordOtp = async (email) => {

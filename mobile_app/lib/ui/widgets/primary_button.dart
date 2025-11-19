@@ -6,11 +6,13 @@ class PrimaryButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.loading = false,
+    this.icon,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final bool loading;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -48,13 +50,27 @@ class PrimaryButton extends StatelessWidget {
                           AlwaysStoppedAnimation<Color>(Colors.black),
                     ),
                   )
-                : Text(
-                    label,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                      color: Colors.black,
-                    ),
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (icon != null) ...[
+                        Icon(
+                          icon,
+                          size: 18,
+                          color: Colors.black,
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      Text(
+                        label,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
                   ),
           ),
         ),

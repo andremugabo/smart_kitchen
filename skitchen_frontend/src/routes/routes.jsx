@@ -70,10 +70,11 @@ export const router = createBrowserRouter([
             },
             {
                 path: 'waiter',
-                element: <Layouts.WaiterLayouts />,
+                element: <Layouts.WaiterLayouts />, 
                 children: [
                     { index: true, element: <Pages.WaiterDashboard /> },
-                    { path: 'orders', element: <Pages.WaiterDashboard /> },
+                    { path: 'orders', element: <Pages.WaiterOrdersPage /> },
+                    { path: 'inventory', element: <Pages.WaiterInventoryPage /> },
                 ],
             },
             { path: '*', element: <Pages.NotFoundPage /> },

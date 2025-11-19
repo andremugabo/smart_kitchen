@@ -4,18 +4,19 @@ import { Sidebar, Topbar } from "../components";
 
 const adminLinks = [
   { label: "Dashboard", path: "/app/admin" },
-  { label: "Orders", path: "/app/admin/orders" },
-  { label: "Recipes", path: "/app/admin/recipes" },
-  { label: "Products", path: "/app/admin/products" },
+  { label: "Users", path: "/app/admin/users" },
+  { label: "Units", path: "/app/admin/units" },
   { label: "Product Types", path: "/app/admin/product-types" },
   { label: "Product Categories", path: "/app/admin/product-categories" },
-  { label: "Menu Categories", path: "/app/admin/menu-categories" },
-  { label: "Units", path: "/app/admin/units" },
-  { label: "Users", path: "/app/admin/users" },
-  { label: "Inventory", path: "/app/admin/inventory" },
+  { label: "Products", path: "/app/admin/products" },
   { label: "Purchase History", path: "/app/admin/purchase-history" },
-  { label: "Reports", path: "/app/admin/reports" },
+  { label: "Inventory", path: "/app/admin/inventory" },
+  { label: "MenuCategories", path: "/app/admin/menu-categories" },
+  { label: "Menu", path: "/app/admin/menus" },
+  { label: "Recipes", path: "/app/admin/recipes" },
+  { label: "Orders", path: "/app/admin/orders" },
   { label: "Payments", path: "/app/admin/payments" },
+  { label: "Reports", path: "/app/admin/reports" },
   { label: "Settings", path: "/app/admin/settings" },
 ];
 

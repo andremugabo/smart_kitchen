@@ -75,7 +75,18 @@ const AdminMenuDetailsPage = () => {
               <div className="flex flex-col items-end gap-2">
                 {menu.picture && (
                   <img
-                    src={menu.picture.startsWith("http") ? menu.picture : `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")}/${menu.picture.replace(/^\//, "")}`}
+                    src={
+                      menu.picture.startsWith("http")
+                        ? menu.picture
+                        : (() => {
+                            const rawBase = import.meta.env.VITE_API_BASE_URL || "";
+                            const base = rawBase.endsWith("/api")
+                              ? rawBase.slice(0, -4)
+                              : rawBase;
+                            const cleanedPath = menu.picture.replace(/^\//, "");
+                            return `${base}/${cleanedPath}`;
+                          })()
+                    }
                     alt={menu.name}
                     className="w-32 h-32 object-cover rounded-md border border-slate-800"
                   />

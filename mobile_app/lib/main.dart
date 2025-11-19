@@ -4,6 +4,7 @@ import 'package:mobile_app/ui/screens/auth/login.dart';
 import 'package:mobile_app/ui/screens/auth/otp_screen.dart';
 import 'package:mobile_app/ui/screens/auth/reset_password_screen.dart';
 import 'package:mobile_app/ui/screens/home/home_screen.dart';
+import 'package:mobile_app/ui/screens/profile/edit_profile_screen.dart';
 import 'package:mobile_app/ui/screens/splash_screen.dart';
 
 void main() {
@@ -34,6 +35,7 @@ class MyApp extends StatelessWidget {
         '/forgot-password': (context) => const ForgotPasswordScreen(),
         '/otp': (context) => const OtpScreen(),
         '/reset-password': (context) => const ResetPasswordScreen(),
+        '/edit-profile': (context) => const EditProfileScreen(),
       },
     );
   }

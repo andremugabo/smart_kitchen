@@ -18,6 +18,9 @@ const AdminInventoryPage = () => {
   const [adjustValue, setAdjustValue] = useState("0");
   const [saving, setSaving] = useState(false);
 
+  const productName = (id) =>
+    products.find((p) => String(p.id) === String(id))?.name || id || "-";
+
   const loadData = async () => {
     setLoading(true);
     setError("");
@@ -163,7 +166,7 @@ const AdminInventoryPage = () => {
               <table className="min-w-full text-xs md:text-sm">
                 <thead>
                   <tr className="border-b border-slate-800 text-slate-300">
-                    <th className="px-2 py-2 text-left">Product ID</th>
+                    <th className="px-2 py-2 text-left">Product</th>
                     <th className="px-2 py-2 text-right">Quantity available</th>
                     <th className="px-2 py-2 text-left">Last updated</th>
                   </tr>
@@ -174,7 +177,7 @@ const AdminInventoryPage = () => {
                       key={inv.id}
                       className="border-b border-slate-900 hover:bg-slate-900/40"
                     >
-                      <td className="px-2 py-2">{inv.product_id}</td>
+                      <td className="px-2 py-2">{productName(inv.product_id)}</td>
                       <td className="px-2 py-2 text-right">
                         {inv.quantity_available ?? 0}
                       </td>

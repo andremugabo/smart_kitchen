@@ -10,6 +10,11 @@ class AppTextField extends StatelessWidget {
     this.prefixIcon,
     this.suffixIcon,
     this.validator,
+    this.maxLines,
+    this.textInputAction,
+    this.enabled,
+    this.onFieldSubmitted,
+    this.onChanged,
   });
 
   final TextEditingController controller;
@@ -19,6 +24,11 @@ class AppTextField extends StatelessWidget {
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
+  final int? maxLines;
+  final TextInputAction? textInputAction;
+  final bool? enabled;
+  final void Function(String)? onFieldSubmitted;
+  final void Function(String)? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +36,11 @@ class AppTextField extends StatelessWidget {
       controller: controller,
       keyboardType: keyboardType,
       obscureText: obscureText,
+      maxLines: obscureText ? 1 : maxLines,
+      textInputAction: textInputAction,
+      enabled: enabled,
+      onFieldSubmitted: onFieldSubmitted,
+      onChanged: onChanged,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,

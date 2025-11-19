@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../../services/api";
-import { PageShell, Card, Spinner, Alert } from "../../components";
+import { PageShell, Card, Spinner, Alert, Button } from "../../components";
 import {
   ResponsiveContainer,
   BarChart,

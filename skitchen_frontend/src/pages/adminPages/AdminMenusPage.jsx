@@ -23,6 +23,14 @@ const AdminMenusPage = () => {
   const [editingId, setEditingId] = useState("");
   const [categories, setCategories] = useState([]);
 
+  const menuCostInfo = (menu) => {
+    const priceNum = Number(menu.price ?? 0);
+    const costNum = Number(menu.estimated_cost ?? 0);
+    const profit = priceNum - costNum;
+    const margin = priceNum > 0 ? profit / priceNum : 0;
+    return { priceNum, costNum, profit, margin };
+  };
+
   const loadData = async (pageToLoad = page) => {
     setLoading(true);
     setError("");
@@ -269,6 +277,8 @@ const AdminMenusPage = () => {
                   <tr className="border-b border-slate-800 text-slate-300">
                     <th className="px-2 py-2 text-left">Name</th>
                     <th className="px-2 py-2 text-right">Price</th>
+                    <th className="px-2 py-2 text-right">Estimated cost</th>
+                    <th className="px-2 py-2 text-right">Profit / margin</th>
                     <th className="px-2 py-2 text-left">Category</th>
                     <th className="px-2 py-2 text-left">Active</th>
                     <th className="px-2 py-2 text-left">Kitchen</th>
@@ -276,54 +286,65 @@ const AdminMenusPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((m) => (
-                    <tr
-                      key={m.id}
-                      className="border-b border-slate-900 hover:bg-slate-900/40"
-                    >
-                      <td className="px-2 py-2">{m.name}</td>
-                      <td className="px-2 py-2 text-right">{m.price}</td>
-                      <td className="px-2 py-2">
-                        {categories.find((c) => c.id === m.category_id)?.name || "-"}
-                      </td>
-                      <td className="px-2 py-2">
-                        {m.is_active ? (
-                          <span className="text-emerald-400">Active</span>
-                        ) : (
-                          <span className="text-slate-500">Inactive</span>
-                        )}
-                      </td>
-                      <td className="px-2 py-2">
-                        {m.is_kitchen_item ? "Yes" : "No"}
-                      </td>
-                      <td className="px-2 py-2 text-right">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          className="px-2 py-1 text-[11px] mr-2"
-                          onClick={() => navigate(`/app/admin/menus/${m.id}`)}
-                        >
-                          Details
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          className="px-2 py-1 text-[11px] mr-2"
-                          onClick={() => handleEditClick(m)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          className="px-2 py-1 text-[11px]"
-                          onClick={() => handleDeleteClick(m.id)}
-                        >
-                          Delete
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
+                  {items.map((m) => {
+                    const { priceNum, costNum, profit, margin } = menuCostInfo(m);
+                    return (
+                      <tr
+                        key={m.id}
+                        className="border-b border-slate-900 hover:bg-slate-900/40"
+                      >
+                        <td className="px-2 py-2">{m.name}</td>
+                        <td className="px-2 py-2 text-right">{priceNum || 0}</td>
+                        <td className="px-2 py-2 text-right">
+                          {m.estimated_cost != null ? costNum.toFixed(2) : "-"}
+                        </td>
+                        <td className="px-2 py-2 text-right">
+                          {m.estimated_cost != null
+                            ? `${profit.toFixed(2)} (${(margin * 100).toFixed(1)}%)`
+                            : "-"}
+                        </td>
+                        <td className="px-2 py-2">
+                          {categories.find((c) => c.id === m.category_id)?.name || "-"}
+                        </td>
+                        <td className="px-2 py-2">
+                          {m.is_active ? (
+                            <span className="text-emerald-400">Active</span>
+                          ) : (
+                            <span className="text-slate-500">Inactive</span>
+                          )}
+                        </td>
+                        <td className="px-2 py-2">
+                          {m.is_kitchen_item ? "Yes" : "No"}
+                        </td>
+                        <td className="px-2 py-2 text-right">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="px-2 py-1 text-[11px] mr-2"
+                            onClick={() => navigate(`/app/admin/menus/${m.id}`)}
+                          >
+                            Details
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="px-2 py-1 text-[11px] mr-2"
+                            onClick={() => handleEditClick(m)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="px-2 py-1 text-[11px]"
+                            onClick={() => handleDeleteClick(m.id)}
+                          >
+                            Delete
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
               <div className="flex justify-end gap-2 mt-3 text-[11px]">
