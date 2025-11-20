@@ -40,7 +40,6 @@ This repository contains both the backend (`skitchen_backend`) and frontend (`sk
 
 You can showcase the application UI here. Replace the placeholder paths with real image files from the `screenshort/` or another folder.
 
-```md
 ![Admin Dashboard](screenshort/admindashboard.png)
 ![Mobile login](screenshort/loginscreenmobile.png)
 ![Login webpage](screenshort/loginweb.png)
@@ -51,7 +50,6 @@ You can showcase the application UI here. Replace the placeholder paths with rea
 ![Product Details](screenshort/productdetails.png)
 ![Recipe List](screenshort/recipelist.png)
 ![User Admin](screenshort/useradmin.png)
-```
 
 ---
 
