@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
-import { PageShell, Card, Spinner, Alert } from "../../components";
+import { PageShell, Card, Spinner, Alert, Button } from "../../components";
 
 const ChefDashboard = () => {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -29,6 +31,16 @@ const ChefDashboard = () => {
       title="Chef dashboard"
       subtitle="Active orders for the kitchen, grouped by status."
     >
+      <div className="flex justify-end mb-3 text-[11px]">
+        <Button
+          type="button"
+          variant="ghost"
+          className="px-3 py-1"
+          onClick={() => navigate("/app/chef/menus-cards")}
+        >
+          Browse menus as cards
+        </Button>
+      </div>
       {error && <Alert variant="error">{error}</Alert>}
 
       {loading ? (

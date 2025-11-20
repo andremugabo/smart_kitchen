@@ -10,6 +10,9 @@ export { default as OtpPage } from './authPages/OtpPage'
 
 export { default as NotFoundPage } from './NotFoundPage'
 
+// Shared pages
+export { default as MenuCardsPage } from './MenuCardsPage'
+
 
 // Admin pages
 export { default as AdminDashBoard } from './adminPages/AdminDashBoard'
@@ -25,14 +28,23 @@ export { default as AdminUsersPage } from './adminPages/AdminUsersPage'
 export { default as AdminMenusPage } from './adminPages/AdminMenusPage'
 export { default as AdminMenuDetailsPage } from './adminPages/AdminMenuDetailsPage'
 export { default as AdminMenuCategoriesPage } from './adminPages/AdminMenuCategoriesPage'
+export { default as AdminOrderDetailsPage } from './adminPages/AdminOrderDetailsPage'
+export { default as AdminPaymentsPage } from './adminPages/AdminPaymentsPage'
+export { default as AdminReportPage } from './adminPages/AdminReportPage'
 
 // Chef page
 export { default as ChefDashboard } from './chefPages/ChefDashboard'
 
 // Manager pages
 export { default as ManagerDashboard } from './managerPages/ManagerDashboard'
+export { default as ManagerOrdersPage } from './managerPages/ManagerOrdersPage'
+export { default as ManagerOrderDetailsPage } from './managerPages/ManagerOrderDetailsPage'
+export { default as ManagerPaymentsPage } from './managerPages/ManagerPaymentsPage'
+export { default as ManagerReportPage } from './managerPages/ManagerReportPage'
 
 // Waiter pages
 export { default as WaiterDashboard } from './waiterPages/WaiterDashboard'
 export { default as WaiterOrdersPage } from './waiterPages/WaiterOrdersPage'
 export { default as WaiterInventoryPage } from './waiterPages/WaiterInventoryPage'
+export { default as WaiterOrderDetailsPage } from './waiterPages/WaiterOrderDetailsPage'
+export { default as WaiterReportPage } from './waiterPages/WaiterReportPage'

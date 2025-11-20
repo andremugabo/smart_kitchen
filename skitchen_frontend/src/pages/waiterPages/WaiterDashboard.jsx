@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { PageShell, Card, Spinner, Alert } from "../../components";
 
 const WaiterDashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ tablesAssigned: 0, openOrdersCount: 0 });
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,7 +64,11 @@ const WaiterDashboard = () => {
             {orders.length > 0 ? (
               <ul className="space-y-1 text-sm">
                 {orders.map((o) => (
-                  <li key={o.id} className="border-b border-slate-800 pb-1">
+                  <li
+                    key={o.id}
+                    className="border-b border-slate-800 pb-1 cursor-pointer hover:bg-slate-900/40"
+                    onClick={() => navigate(`/app/waiter/orders/${o.id}`)}
+                  >
                     <div className="flex justify-between">
                       <span>Order #{o.id}</span>
                       <span className="text-slate-300">

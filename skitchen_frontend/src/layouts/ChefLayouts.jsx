@@ -6,6 +6,7 @@ const chefLinks = [
   { label: "Dashboard", path: "/app/chef" },
   { label: "Orders", path: "/app/chef/orders" },
   { label: "Menus", path: "/app/chef/menus" },
+  { label: "Reports", path: "/app/chef/reports" },
 ];
 
 const ChefLayouts = () => {

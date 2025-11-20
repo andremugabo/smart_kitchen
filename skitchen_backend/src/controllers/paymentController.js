@@ -1,19 +1,29 @@
 import PDFDocument from "pdfkit";
 import { Op } from "sequelize";
+import path from "path";
+import { fileURLToPath } from "url";
+import QRCode from "qrcode";
 import {
   listPayments,
   getPayment,
   createPayment,
   updatePaymentStatus,
   getReceiptData,
+  getPaymentsSummary,
 } from "../services/paymentService.js";
 import { Payment } from "../models/index.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+// controllers/ -> src/ -> backend root -> public/logo.png
+const logoPath = path.join(__dirname, "..", "..", "public", "logo.png");
 
 export const listPaymentsController = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 20;
-    const { rows, count } = await listPayments(page, limit);
+    const { order_id } = req.query;
+    const { rows, count } = await listPayments({ page, limit, order_id });
     res.json({
       success: true,
       data: rows,
@@ -75,7 +85,8 @@ export const generateReceiptPdfController = async (req, res) => {
       req.params.id
     );
 
-    const doc = new PDFDocument({ margin: 50 });
+    // Narrow receipt-style document (58mm thermal width approx.)
+    const doc = new PDFDocument({ margin: 12, size: [164, 600] });
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
@@ -85,36 +96,147 @@ export const generateReceiptPdfController = async (req, res) => {
 
     doc.pipe(res);
 
-    doc.fontSize(20).text("Smart Kitchen Receipt", { align: "center" });
-    doc.moveDown();
+    // Header / logo
+    try {
+      doc.image(logoPath, {
+        fit: [40, 40],
+        align: "center",
+      });
+      doc.moveDown(0.3);
+    } catch (e) {
+      // If logo is missing, skip silently
+    }
 
-    doc.fontSize(12).text(`Receipt ID: ${payment.id}`);
+    doc
+      .fontSize(18)
+      .fillColor("#000000")
+      .text("SMART KITCHEN", { align: "center" });
+    doc
+      .fontSize(9)
+      .fillColor("#555555")
+      .text("Payment receipt", { align: "center" });
+    doc.moveDown(0.5);
+    doc
+      .moveTo(doc.page.margins.left, doc.y)
+      .lineTo(doc.page.width - doc.page.margins.right, doc.y)
+      .stroke("#dddddd");
+    doc.moveDown(0.5);
+
+    doc.fontSize(10).fillColor("#000000");
+    doc.text(`Receipt ID: ${payment.id}`);
     doc.text(`Order ID: ${order.id}`);
     if (user) {
-      doc.text(`Customer: ${user.username || user.email || user.id}`);
+      const name = user.username || user.name || user.full_name || user.email;
+      if (name) {
+        doc.text(`Customer: ${name}`);
+      }
     }
     doc.text(`Payment Date: ${new Date(payment.payment_date).toLocaleString()}`);
-    doc.text(`Payment Method: ${payment.method}`);
-    doc.text(`Payment Status: ${payment.status}`);
+    doc.text(`Method: ${payment.method}`);
+    doc.text(`Status: ${payment.status}`);
 
-    doc.moveDown();
-    doc.fontSize(14).text("Items:");
     doc.moveDown(0.5);
+    doc
+      .moveTo(doc.page.margins.left, doc.y)
+      .lineTo(doc.page.width - doc.page.margins.right, doc.y)
+      .stroke("#dddddd");
+    doc.moveDown(0.5);
+
+    doc.fontSize(11).text("Items:");
+    doc.moveDown(0.25);
 
     details.forEach((d) => {
       const name = d.Menu ? d.Menu.name : d.menu_id;
       const qty = Number(d.quantity || 0);
       const price = Number(d.price_at_time || 0);
       const line = price * qty;
+
+      const yStart = doc.y;
       doc
-        .fontSize(12)
+        .rect(
+          doc.page.margins.left,
+          yStart - 1,
+          doc.page.width - doc.page.margins.left - doc.page.margins.right,
+          12
+        )
+        .fillOpacity(0.03)
+        .fill("#64748b")
+        .fillOpacity(1);
+      doc.y = yStart;
+
+      doc
+        .fontSize(9)
+        .fillColor("#111827")
         .text(`${name} x ${qty} @ ${price.toFixed(2)} = ${line.toFixed(2)}`);
+      doc.moveDown(0.05);
     });
 
-    doc.moveDown();
-    doc.fontSize(14).text(`Total Paid: ${Number(payment.amount).toFixed(2)}`);
+    doc.moveDown(0.5);
+    doc
+      .moveTo(doc.page.margins.left, doc.y)
+      .lineTo(doc.page.width - doc.page.margins.right, doc.y)
+      .stroke("#000000");
+    doc.moveDown(0.5);
+
+    const paymentRef = `PAY-${String(payment.id).slice(0, 8).toUpperCase()}`;
+    const orderRef = `ORD-${String(order.id).slice(0, 8).toUpperCase()}`;
+
+    doc
+      .fontSize(10)
+      .fillColor("#0f172a")
+      .text(`Payment: ${paymentRef}`);
+    doc
+      .fontSize(10)
+      .fillColor("#0f172a")
+      .text(`Order: ${orderRef}`);
+
+    doc
+      .moveDown(0.2)
+      .fontSize(11)
+      .fillColor("#16a34a")
+      .text(`Total Paid: ${Number(payment.amount).toFixed(2)}`, {
+        align: "right",
+      });
+
+    // PAYMENT QR code with compact JSON payload
+    try {
+      const qrPayload = {
+        type: "payment",
+        orderId: order.id,
+        orderRef,
+        paymentId: payment.id,
+        paymentRef,
+        amount: Number(payment.amount || 0),
+        status: payment.status,
+        method: payment.method,
+        date: payment.payment_date,
+      };
+
+      const qrBuffer = await QRCode.toBuffer(JSON.stringify(qrPayload), {
+        width: 120,
+        margin: 1,
+      });
+
+      doc.moveDown(0.5);
+      doc.image(qrBuffer, {
+        fit: [50, 50],
+        align: "center",
+      });
+    } catch (e) {
+      // If QR generation fails, skip it silently
+    }
 
     doc.end();
+  } catch (e) {
+    res.status(400).json({ success: false, error: e.message });
+  }
+};
+
+export const paymentsSummaryController = async (req, res) => {
+  try {
+    const { from, to } = req.query;
+    const summary = await getPaymentsSummary({ from, to });
+    res.json({ success: true, data: summary });
   } catch (e) {
     res.status(400).json({ success: false, error: e.message });
   }
@@ -136,10 +258,23 @@ export const generatePaymentsReportPdfController = async (req, res) => {
       order: [["payment_date", "ASC"]],
     });
 
-    const totalAmount = payments.reduce(
-      (sum, p) => sum + Number(p.amount || 0),
-      0
-    );
+    let totalAmount = 0;
+    const revenueByMethod = {};
+    const ordersByStatus = {};
+
+    payments.forEach((p) => {
+      const amount = Number(p.amount || 0);
+      const method = p.method || "unknown";
+      totalAmount += amount;
+
+      if (p.status === "paid") {
+        revenueByMethod[method] = (revenueByMethod[method] || 0) + amount;
+      }
+
+      if (p.status) {
+        ordersByStatus[p.status] = (ordersByStatus[p.status] || 0) + 1;
+      }
+    });
 
     const doc = new PDFDocument({ margin: 40, size: "A4" });
 
@@ -151,8 +286,23 @@ export const generatePaymentsReportPdfController = async (req, res) => {
 
     doc.pipe(res);
 
-    doc.fontSize(20).text("Payments Report", { align: "center" });
-    doc.moveDown();
+    try {
+      doc.image(logoPath, {
+        fit: [80, 80],
+        align: "center",
+      });
+      doc.moveDown(0.5);
+    } catch (e) {
+      // optional logo
+    }
+
+    doc.fontSize(22).fillColor("#000000").text("SMART KITCHEN", {
+      align: "center",
+    });
+    doc.fontSize(12).fillColor("#555555").text("Payments report", {
+      align: "center",
+    });
+    doc.moveDown(0.5);
 
     if (from || to) {
       doc
@@ -164,21 +314,110 @@ export const generatePaymentsReportPdfController = async (req, res) => {
       doc.moveDown();
     }
 
-    doc.fontSize(12).text(`Total payments: ${payments.length}`);
-    doc.fontSize(12).text(`Total amount: ${totalAmount.toFixed(2)}`);
+    doc.fontSize(11).fillColor("#0f172a");
+    doc.text(`Total payments: ${payments.length}`);
+    doc.text(`Total amount: ${totalAmount.toFixed(2)}`);
     doc.moveDown();
 
-    doc.fontSize(14).text("Details:");
+    // Orders by status summary with status colors
+    if (Object.keys(ordersByStatus).length > 0) {
+      doc.fontSize(12).fillColor("#000000").text("Orders by status:");
+      Object.entries(ordersByStatus).forEach(([status, count]) => {
+        let color = "#9ca3af"; // default gray
+        if (status === "completed" || status === "paid") color = "#22c55e"; // green
+        else if (status === "pending" || status === "preparing") color = "#f97316"; // orange
+        else if (status === "failed" || status === "canceled") color = "#ef4444"; // red
+        else if (status === "refunded") color = "#3b82f6"; // blue
+
+        doc
+          .fontSize(10)
+          .fillColor(color)
+          .text(`• ${status}: ${count}`);
+      });
+      doc.moveDown(0.5);
+    }
+
+    // Revenue by payment method with method colors
+    if (Object.keys(revenueByMethod).length > 0) {
+      doc.fontSize(12).fillColor("#000000").text("Revenue by payment method:");
+      Object.entries(revenueByMethod).forEach(([method, amount]) => {
+        let color = "#9ca3af";
+        if (method === "cash") color = "#22c55e"; // green
+        else if (method === "card") color = "#3b82f6"; // blue
+        else if (method === "mobile") color = "#a855f7"; // purple
+        else if (method === "tab") color = "#f59e0b"; // amber
+
+        doc
+          .fontSize(10)
+          .fillColor(color)
+          .text(`• ${method}: ${Number(amount).toFixed(2)}`);
+      });
+      doc.moveDown(0.75);
+    }
+
+    // Section title
+    doc
+      .fontSize(12)
+      .fillColor("#000000")
+      .text("Details", { underline: true });
     doc.moveDown(0.5);
 
+    // Table-style header
+    doc
+      .fontSize(10)
+      .fillColor("#4b5563")
+      .text("Date / Time", { continued: true })
+      .text("    | Order", { continued: true })
+      .text("    | Method", { continued: true })
+      .text("    | Status", { continued: true })
+      .text("    | Amount");
+
+    doc.moveDown(0.25);
+    doc
+      .moveTo(doc.page.margins.left, doc.y)
+      .lineTo(doc.page.width - doc.page.margins.right, doc.y)
+      .stroke("#e5e7eb");
+    doc.moveDown(0.25);
+
     payments.forEach((p) => {
+      const dt = p.payment_date
+        ? new Date(p.payment_date).toLocaleString()
+        : "-";
+      const baseText = `${dt} | ${p.order_id} | ${p.method}`;
+      const amountText = Number(p.amount).toFixed(2);
+
+      // Color status text
+      let statusColor = "#9ca3af"; // default grey
+      if (p.status === "paid") statusColor = "#22c55e"; // green
+      else if (p.status === "pending") statusColor = "#f97316"; // orange
+      else if (p.status === "failed") statusColor = "#ef4444"; // red
+      else if (p.status === "refunded") statusColor = "#3b82f6"; // blue
+
+      // Slight tinted background band for readability
+      const yStart = doc.y;
       doc
-        .fontSize(11)
-        .text(
-          `${new Date(p.payment_date).toLocaleString()} | Order: ${p.order_id} | Method: ${p.method} | Status: ${p.status} | Amount: ${Number(
-            p.amount
-          ).toFixed(2)}`
-        );
+        .rect(
+          doc.page.margins.left,
+          yStart - 1,
+          doc.page.width - doc.page.margins.left - doc.page.margins.right,
+          14
+        )
+        .fillOpacity(0.02)
+        .fill("#64748b")
+        .fillOpacity(1);
+      doc.y = yStart;
+
+      doc
+        .fontSize(9)
+        .fillColor("#111827")
+        .text(baseText, { continued: true })
+        .text(" | ", { continued: true })
+        .fillColor(statusColor)
+        .text(p.status, { continued: true })
+        .fillColor("#111827")
+        .text(" | " + amountText);
+
+      doc.moveDown(0.1);
     });
 
     doc.end();

@@ -99,15 +99,35 @@ export const getSalesOverTime = async ({ from, to }) => {
 
   const map = new Map();
 
+  const normalizeStatus = (rawStatus) => {
+    const s = (rawStatus || "unknown").toLowerCase();
+    if (s === "pending" || s === "preparing" || s === "in_kitchen") return "in_progress";
+    if (s === "completed" || s === "served" || s === "paid") return "completed";
+    if (s === "canceled" || s === "cancelled") return "canceled";
+    if (s === "failed" || s === "refunded") return s;
+    return "other";
+  };
+
   for (const o of orders) {
     const d = o.order_date ? new Date(o.order_date) : new Date();
     const key = d.toISOString().slice(0, 10); // YYYY-MM-DD
     if (!map.has(key)) {
-      map.set(key, { date: key, totalRevenue: 0, totalOrders: 0 });
+      map.set(key, {
+        date: key,
+        totalRevenue: 0,
+        totalOrders: 0,
+        statusCounts: {},
+      });
     }
     const entry = map.get(key);
     entry.totalRevenue += Number(o.total_amount || 0);
     entry.totalOrders += 1;
+
+    const status = normalizeStatus(o.status);
+    if (!entry.statusCounts[status]) {
+      entry.statusCounts[status] = 0;
+    }
+    entry.statusCounts[status] += 1;
   }
 
   return Array.from(map.values()).sort((a, b) => (a.date < b.date ? -1 : 1));

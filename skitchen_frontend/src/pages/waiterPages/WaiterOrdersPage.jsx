@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { PageShell, Card, Spinner, Alert, Input, Button } from "../../components";
 import { listMenus } from "../../services/menuService";
 
 const WaiterOrdersPage = () => {
   const user = useSelector((state) => state.user.user);
+  const navigate = useNavigate();
   const [menus, setMenus] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -20,6 +22,13 @@ const WaiterOrdersPage = () => {
       try {
         const res = await listMenus({ page: 1, limit: 100 });
         setMenus(res.data || []);
+
+        // If a menu was selected from the menu cards page, prefill it
+        const pendingId = localStorage.getItem("pendingOrderMenuId");
+        if (pendingId) {
+          setItems([{ menu_id: pendingId, quantity: "1", kitchen_note: "" }]);
+          localStorage.removeItem("pendingOrderMenuId");
+        }
       } catch (err) {
         const msg = err?.response?.data?.error || "Failed to load menus";
         setError(msg);
@@ -40,6 +49,10 @@ const WaiterOrdersPage = () => {
 
   const addItemRow = () => {
     setItems((prev) => [...prev, { menu_id: "", quantity: "1", kitchen_note: "" }]);
+  };
+
+  const openMenuCards = () => {
+    navigate("/app/waiter/menus-cards", { state: { fromOrder: true } });
   };
 
   const removeItemRow = (index) => {
@@ -135,6 +148,14 @@ const WaiterOrdersPage = () => {
                   onClick={addItemRow}
                 >
                   Add item
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="px-2 py-1 text-[11px] ml-2"
+                  onClick={openMenuCards}
+                >
+                  Browse menus as cards
                 </Button>
               </div>
 

@@ -8,6 +8,7 @@ import {
   deleteOrderController,
   getKitchenOrdersController,
   getCurrentWaiterOrdersController,
+  generateOrderReceiptPdfController,
 } from "../controllers/orderController.js";
 
 const router = express.Router();
@@ -15,6 +16,7 @@ const router = express.Router();
 router.get("/", listOrdersController);
 router.get("/kitchen", authenticate("admin", "manager", "chef"), getKitchenOrdersController);
 router.get("/waiter/current", authenticate("waiter"), getCurrentWaiterOrdersController);
+router.get("/:id/receipt", authenticate("admin", "manager"), generateOrderReceiptPdfController);
 router.get("/:id", getOrderController);
 
 router.post("/", authenticate("admin", "manager", "waiter"), createOrderController);

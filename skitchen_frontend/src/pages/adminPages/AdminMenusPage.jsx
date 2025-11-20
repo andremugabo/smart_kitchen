@@ -275,6 +275,7 @@ const AdminMenusPage = () => {
               <table className="min-w-full text-xs md:text-sm">
                 <thead>
                   <tr className="border-b border-slate-800 text-slate-300">
+                    <th className="px-2 py-2 text-left">Image</th>
                     <th className="px-2 py-2 text-left">Name</th>
                     <th className="px-2 py-2 text-right">Price</th>
                     <th className="px-2 py-2 text-right">Estimated cost</th>
@@ -293,6 +294,28 @@ const AdminMenusPage = () => {
                         key={m.id}
                         className="border-b border-slate-900 hover:bg-slate-900/40"
                       >
+                        <td className="px-2 py-2">
+                          {m.picture ? (
+                            <img
+                              src={
+                                m.picture.startsWith("http")
+                                  ? m.picture
+                                  : (() => {
+                                      const rawBase = import.meta.env.VITE_API_BASE_URL || "";
+                                      const base = rawBase.endsWith("/api")
+                                        ? rawBase.slice(0, -4)
+                                        : rawBase;
+                                      const cleanedPath = m.picture.replace(/^\//, "");
+                                      return `${base}/${cleanedPath}`;
+                                    })()
+                              }
+                              alt={m.name}
+                              className="w-10 h-10 rounded object-cover border border-slate-800"
+                            />
+                          ) : (
+                            <span className="text-slate-500 text-[11px]">-</span>
+                          )}
+                        </td>
                         <td className="px-2 py-2">{m.name}</td>
                         <td className="px-2 py-2 text-right">{priceNum || 0}</td>
                         <td className="px-2 py-2 text-right">

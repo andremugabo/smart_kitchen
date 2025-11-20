@@ -5,6 +5,7 @@ import { Sidebar, Topbar } from "../components";
 const waiterLinks = [
   { label: "Dashboard", path: "/app/waiter" },
   { label: "Orders", path: "/app/waiter/orders" },
+  { label: "Reports", path: "/app/waiter/reports" },
 ];
 
 const WaiterLayouts = () => {

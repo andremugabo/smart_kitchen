@@ -1,15 +1,25 @@
-import { Order, OrderDetail, Menu, Notification, User, Recipe, Product } from "../models/index.js";
+import { Order, OrderDetail, Menu, Notification, User, Recipe, Product, Payment } from "../models/index.js";
 import { decrementInventory } from "./inventoryService.js";
 import { Op } from "sequelize";
 
 export const listOrders = async () => {
-  return Order.findAll({ order: [["order_date", "DESC"]] });
+  return Order.findAll({
+    order: [["order_date", "DESC"]],
+    include: [
+      { model: Payment },
+      { model: User },
+    ],
+  });
 };
 
 export const getOrder = async (id) => {
   const item = await Order.findByPk(id, {
     include: [
-      { model: OrderDetail },
+      {
+        model: OrderDetail,
+        include: [{ model: Menu }],
+      },
+      { model: User },
     ],
   });
   if (!item) throw new Error("Order not found");

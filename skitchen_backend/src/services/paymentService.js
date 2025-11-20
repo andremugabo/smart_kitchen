@@ -2,10 +2,21 @@ import { Payment, Order, OrderDetail, Menu, User } from "../models/index.js";
 import { Op } from "sequelize";
 
 
-export const listPayments = async (page = 1, limit = 20) => {
+export const listPayments = async ({ page = 1, limit = 20, order_id } = {}) => {
   const offset = (page - 1) * limit;
+  const where = {};
+  if (order_id) {
+    where.order_id = order_id;
+  }
   const { rows, count } = await Payment.findAndCountAll({
+    where,
     order: [["payment_date", "DESC"]],
+    include: [
+      {
+        model: Order,
+        include: [User],
+      },
+    ],
     limit,
     offset,
   });
@@ -81,4 +92,43 @@ export const getPaymentsForReport = async ({ from, to }) => {
   );
 
   return { payments, totalAmount };
+};
+
+export const getPaymentsSummary = async ({ from, to }) => {
+  const where = {};
+  if (from || to) {
+    where.payment_date = {};
+    if (from) where.payment_date[Op.gte] = new Date(from);
+    if (to) where.payment_date[Op.lte] = new Date(to);
+  }
+
+  const payments = await Payment.findAll({
+    where,
+    include: [
+      {
+        model: Order,
+      },
+    ],
+  });
+
+  let totalRevenue = 0;
+  const revenueByMethod = {};
+  const ordersByStatus = {};
+
+  for (const p of payments) {
+    const amount = Number(p.amount || 0);
+    const method = p.method || "unknown";
+    const order = p.Order;
+
+    if (p.status === "paid") {
+      totalRevenue += amount;
+      revenueByMethod[method] = (revenueByMethod[method] || 0) + amount;
+    }
+
+    if (order && order.status) {
+      ordersByStatus[order.status] = (ordersByStatus[order.status] || 0) + 1;
+    }
+  }
+
+  return { totalRevenue, revenueByMethod, ordersByStatus };
 };
