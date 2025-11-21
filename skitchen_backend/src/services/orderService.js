@@ -131,6 +131,103 @@ export const createOrder = async ({ user_id, table_number, items }) => {
   return order;
 };
 
+export const addItemsToOrder = async (orderId, items) => {
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    throw new Error("Items array is required");
+  }
+
+  const order = await Order.findByPk(orderId);
+  if (!order) throw new Error("Order not found");
+
+  if (
+    order.status === "canceled" ||
+    order.status === "completed" ||
+    order.status === "served"
+  ) {
+    throw new Error("Cannot add items to a served, completed, or canceled order");
+  }
+
+  const menus = await Menu.findAll({
+    where: { id: items.map((i) => i.menu_id) },
+  });
+
+  if (menus.length === 0) {
+    throw new Error("No valid menu items provided");
+  }
+
+  let addedTotal = 0;
+
+  await Order.sequelize.transaction(async (t) => {
+    for (const item of items) {
+      const menu = menus.find((m) => m.id === item.menu_id);
+      if (!menu) continue;
+
+      const quantity = Number(item.quantity ?? 1);
+      if (!quantity || Number.isNaN(quantity) || quantity <= 0) continue;
+
+      const priceAtTime = Number(menu.price);
+      const lineTotal = priceAtTime * quantity;
+      addedTotal += lineTotal;
+
+      await OrderDetail.create(
+        {
+          order_id: order.id,
+          menu_id: menu.id,
+          quantity,
+          price_at_time: priceAtTime,
+          kitchen_note: item.kitchen_note ?? null,
+        },
+        { transaction: t }
+      );
+
+      const recipes = await Recipe.findAll({
+        where: { menu_id: menu.id },
+        include: [{ model: Product }],
+        transaction: t,
+      });
+
+      for (const recipe of recipes) {
+        const product = recipe.Product;
+        if (!product) continue;
+
+        const recipeQty = Number(recipe.quantity_required);
+        if (!recipeQty || Number.isNaN(recipeQty)) continue;
+
+        const totalRecipeQty = recipeQty * quantity;
+        const conversionFactor = Number(product.conversion_factor || 1);
+        const inventoryQty =
+          conversionFactor > 0 ? totalRecipeQty / conversionFactor : totalRecipeQty;
+
+        if (inventoryQty > 0) {
+          try {
+            await decrementInventory(product.id, inventoryQty);
+          } catch (e) {
+            if (
+              e &&
+              (e.message === "Insufficient inventory" ||
+                e.message === "Inventory record not found")
+            ) {
+              throw new Error(`Insufficient inventory for product ${product.name}`);
+            }
+            throw e;
+          }
+        }
+      }
+    }
+
+    if (addedTotal > 0) {
+      const currentTotal = Number(order.total_amount || 0);
+      await order.update(
+        { total_amount: currentTotal + addedTotal, updated_at: new Date() },
+        { transaction: t }
+      );
+    }
+  });
+
+  // Return fresh order with details
+  return getOrder(order.id);
+};
+
 export const updateOrderStatus = async (id, status) => {
   const order = await getOrder(id);
   await order.update({ status, updated_at: new Date() });

@@ -9,6 +9,7 @@ import {
   FileText,
   CreditCard,
   Settings,
+  BarChart3,
 } from "lucide-react";
 
 const ICONS = {
@@ -17,7 +18,7 @@ const ICONS = {
   Menus: UtensilsCrossed,
   Products: Package,
   Notifications: Bell,
-  Reports: FileText,
+  Reports: BarChart3,
   Payments: CreditCard,
   Settings: Settings,
   Inventory: ShoppingBag,

@@ -15,6 +15,7 @@ const adminLinks = [
   { label: "Menu", path: "/app/admin/menus" },
   { label: "Recipes", path: "/app/admin/recipes" },
   { label: "Orders", path: "/app/admin/orders" },
+  { label: "Order change requests", path: "/app/admin/order-change-requests" },
   { label: "Payments", path: "/app/admin/payments" },
   { label: "Reports", path: "/app/admin/reports" },
   { label: "Settings", path: "/app/admin/settings" },

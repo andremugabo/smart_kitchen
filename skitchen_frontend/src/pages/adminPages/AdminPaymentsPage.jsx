@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { PageShell, Card, Spinner, Alert, Button } from "../../components";
 import api from "../../services/api";
 import { listPayments } from "../../services/paymentService";
+import { fetchSettings } from "../../services/settingsService";
 
 const AdminPaymentsPage = () => {
   const [payments, setPayments] = useState([]);
@@ -11,13 +12,18 @@ const AdminPaymentsPage = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [currency, setCurrency] = useState("RWF");
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       setError("");
       try {
-        const res = await listPayments({ page: 1, limit: 200 });
+        const [settings, res] = await Promise.all([
+          fetchSettings(),
+          listPayments({ page: 1, limit: 200 }),
+        ]);
+        if (settings?.currency) setCurrency(settings.currency);
         setPayments(res.data || []);
       } catch (err) {
         const msg = err?.response?.data?.error || "Failed to load payments";
@@ -116,7 +122,7 @@ const AdminPaymentsPage = () => {
             </div>
             <div className="ml-auto flex items-center gap-2">
               <span className="text-[11px] text-slate-300">
-                Showing {filtered.length} payments, total {totalAmount.toFixed(2)}
+                Showing {filtered.length} payments, total {currency} {totalAmount.toFixed(2)}
               </span>
               <Button
                 type="button"
@@ -178,7 +184,7 @@ const AdminPaymentsPage = () => {
                       <td className="px-2 py-1 capitalize">{p.method}</td>
                       <td className="px-2 py-1 capitalize">{p.status}</td>
                       <td className="px-2 py-1 text-right">
-                        {Number(p.amount || 0).toFixed(2)}
+                        {currency} {Number(p.amount || 0).toFixed(2)}
                       </td>
                       <td className="px-2 py-1 text-right">
                         <Button

@@ -1,20 +1,32 @@
-import React from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { Menu } from "lucide-react";
 import { Button } from "../../components";
-import { clearUser } from "../../store/userSlice";
-import { logout } from "../../services/userService";
+import { logout } from "../../services/authService";
+import { fetchSettings } from "../../services/settingsService";
 
 const Topbar = ({ onMenuClick }) => {
   const user = useSelector((state) => state.user.user);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const [companyName, setCompanyName] = useState("Smart Kitchen");
+  const [companyLogoUrl, setCompanyLogoUrl] = useState("");
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await fetchSettings();
+        if (data) {
+          if (data.companyName) setCompanyName(data.companyName);
+          if (data.companyLogoUrl) setCompanyLogoUrl(data.companyLogoUrl);
+        }
+      } catch {
+        // ignore settings load error in topbar
+      }
+    };
+    load();
+  }, []);
 
   const handleLogout = () => {
     logout();
-    dispatch(clearUser());
-    navigate("/login");
   };
 
   const roleLabel = user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "";
@@ -46,9 +58,23 @@ const Topbar = ({ onMenuClick }) => {
         >
           <Menu className="w-5 h-5 text-slate-200" />
         </button>
-        <div className="hidden lg:block text-sm text-slate-300">
-          {roleLabel && <span className="font-semibold text-emerald-400 mr-2">{roleLabel}</span>}
-          <span className="text-xs text-slate-400">Smart Kitchen Dashboard</span>
+        <div className="hidden lg:flex items-center gap-2 text-sm text-slate-300">
+          {companyLogoUrl && (
+            <img
+              src={companyLogoUrl}
+              alt={companyName}
+              className="w-6 h-6 rounded-full object-cover border border-slate-700"
+            />
+          )}
+          <div className="flex flex-col">
+            <span className="text-xs font-semibold text-slate-100">
+              {companyName}
+            </span>
+            <span className="text-[11px] text-slate-400">
+              {roleLabel && <span className="text-emerald-400 mr-1">{roleLabel}</span>}
+              Dashboard
+            </span>
+          </div>
         </div>
       </div>
 

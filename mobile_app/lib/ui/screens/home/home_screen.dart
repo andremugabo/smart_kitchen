@@ -4,7 +4,16 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:mobile_app/services/api_client.dart';
 import 'package:mobile_app/services/auth_storage.dart';
 import 'package:mobile_app/services/user_service.dart';
+import 'package:mobile_app/services/order_service.dart';
+import 'package:mobile_app/services/report_service.dart';
+import 'package:mobile_app/services/menu_service.dart';
+import 'package:mobile_app/services/notification_service.dart';
+import 'package:mobile_app/services/inventory_service.dart';
 import 'package:mobile_app/ui/screens/profile/profile_screen.dart';
+import 'package:mobile_app/ui/screens/order/order_screen.dart';
+import 'package:mobile_app/ui/screens/order/orders_list_screen.dart';
+import 'package:mobile_app/ui/screens/menu/manu_screen.dart';
+import 'package:mobile_app/ui/screens/payments/payments_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,6 +32,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   int _selectedIndex = 0;
   bool _isLoading = true;
 
+  final OrderService _orderService = OrderService();
+  final ReportService _reportService = ReportService();
+  final MenuService _menuService = MenuService();
+  final NotificationService _notificationService = NotificationService();
+  final InventoryService _inventoryService = InventoryService();
+
+  int? _waiterOpenOrders;
+  int? _waiterTablesAssigned;
+  int? _waiterBillsCount;
+  int? _waiterUnreadNotifications;
+  double? _managerTotalRevenue;
+  int? _managerTotalOrders;
+  int? _managerActiveMenus;
+  int? _managerLowStockCount;
+  String? _managerTopMenuName;
+
   late AnimationController _fabController;
   late Animation<double> _fabScaleAnimation;
 
@@ -32,6 +57,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _setupAnimations();
     _loadRole();
     _setSystemUIOverlay();
+  }
+
+  String _resolvePictureUrl(String? picture) {
+    if (picture == null || picture.isEmpty) return '';
+    if (picture.startsWith('http')) return picture;
+    // ApiClient.baseUrl is e.g. http://localhost:3000/api -> strip /api
+    const rawBase = ApiClient.baseUrl;
+    final base = rawBase.endsWith('/api')
+        ? rawBase.substring(0, rawBase.length - 4)
+        : rawBase;
+    final cleaned = picture.replaceFirst(RegExp(r'^/'), '');
+    return '$base/$cleaned';
   }
 
   void _setupAnimations() {
@@ -80,6 +117,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     bool? isActive;
     String? createdAt;
 
+    int? waiterOpenOrders;
+    int? waiterTablesAssigned;
+    int? waiterBillsCount;
+    int? waiterUnreadNotifications;
+    double? managerTotalRevenue;
+    int? managerTotalOrders;
+    int? managerActiveMenus;
+    int? managerLowStockCount;
+    String? managerTopMenuName;
+
     try {
       final userService = UserService();
       final result = await userService.getProfile();
@@ -90,6 +137,73 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         picture = user['picture']?.toString() ?? picture;
         isActive = user['isActive'] as bool?;
         createdAt = user['created_at']?.toString();
+      }
+
+      final effectiveRole = (derivedRole ?? storedRole)?.toString().toLowerCase();
+
+      if (effectiveRole == 'waiter') {
+        try {
+          final overview = await _orderService.getCurrentWaiterOverview();
+          final stats = overview['stats'];
+          if (stats is Map<String, dynamic>) {
+            waiterOpenOrders = (stats['openOrdersCount'] as num?)?.toInt();
+            waiterTablesAssigned = (stats['tablesAssigned'] as num?)?.toInt();
+          }
+        } catch (_) {}
+
+        try {
+          final notifications = await _notificationService.listUserNotifications();
+          int bills = 0;
+          int unread = 0;
+          for (final n in notifications) {
+            final isRead = n['is_read'] == true;
+            if (!isRead) {
+              unread++;
+              final type = n['type']?.toString();
+              if (type == 'payment') {
+                bills++;
+              }
+            }
+          }
+          waiterBillsCount = bills;
+          waiterUnreadNotifications = unread;
+        } catch (_) {}
+      } else if (effectiveRole == 'manager' || effectiveRole == 'admin') {
+        try {
+          final sales = await _reportService.getSalesSummary();
+          managerTotalRevenue = (sales['totalRevenue'] as num?)?.toDouble();
+          managerTotalOrders = (sales['totalOrders'] as num?)?.toInt();
+        } catch (_) {}
+
+        try {
+          final perf = await _reportService.getMenuPerformance();
+          // Expecting something like { items: [ { menuName, totalQuantity }, ... ] }
+          final items = perf['items'];
+          if (items is List && items.isNotEmpty) {
+            final top = items.first as Map<String, dynamic>;
+            managerTopMenuName = top['menuName']?.toString() ?? top['name']?.toString();
+          }
+        } catch (_) {}
+
+        try {
+          final menus = await _menuService.listMenus();
+          managerActiveMenus = menus.length;
+        } catch (_) {}
+
+        try {
+          final inventory = await _inventoryService.listInventory();
+          // Consider items with very low quantity as "low stock".
+          // Threshold can be adjusted if needed.
+          const threshold = 5.0;
+          int low = 0;
+          for (final item in inventory) {
+            final qty = (item['quantity_available'] as num?)?.toDouble() ?? 0.0;
+            if (qty <= threshold) {
+              low++;
+            }
+          }
+          managerLowStockCount = low;
+        } catch (_) {}
       }
     } on ApiException catch (_) {
     } catch (_) {}
@@ -102,6 +216,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       _email = email;
       _isActive = isActive;
       _createdAt = createdAt;
+      _waiterOpenOrders = waiterOpenOrders;
+      _waiterTablesAssigned = waiterTablesAssigned;
+      _waiterBillsCount = waiterBillsCount;
+      _waiterUnreadNotifications = waiterUnreadNotifications;
+      _managerTotalRevenue = managerTotalRevenue;
+      _managerTotalOrders = managerTotalOrders;
+      _managerActiveMenus = managerActiveMenus;
+      _managerLowStockCount = managerLowStockCount;
+      _managerTopMenuName = managerTopMenuName;
       _isLoading = false;
     });
   }
@@ -114,13 +237,53 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   List<_DashboardCardData> _cardsForRole(String? role) {
+    final normalizedRole = role?.toLowerCase();
+
+    String _formatRevenue(double? value) {
+      if (value == null) return 'Fr --';
+      if (value >= 1000000) {
+        return 'Fr ${(value / 1000000).toStringAsFixed(1)}M';
+      }
+      if (value >= 1000) {
+        return 'Fr ${(value / 1000).toStringAsFixed(1)}k';
+      }
+      return 'Fr ${value.toStringAsFixed(0)}';
+    }
+
     switch (role) {
       case 'admin':
+        // Admin shares the same core KPIs as manager: revenue, orders, menus, low stock, plus top menu.
         return [
-          _DashboardCardData('Users', '12', Icons.people_outline, Colors.blue),
-          _DashboardCardData('Menus', '8', Icons.restaurant_menu, Colors.purple),
-          _DashboardCardData('Inventory', '42', Icons.inventory_2_outlined, Colors.orange),
-          _DashboardCardData('Purchase', '17', Icons.receipt_long, Colors.green),
+          _DashboardCardData(
+            'Revenue',
+            _formatRevenue(_managerTotalRevenue),
+            Icons.trending_up,
+            Colors.green,
+          ),
+          _DashboardCardData(
+            'Orders',
+            (_managerTotalOrders ?? 0).toString(),
+            Icons.receipt_long,
+            Colors.blue,
+          ),
+          _DashboardCardData(
+            'Active Menus',
+            (_managerActiveMenus ?? 0).toString(),
+            Icons.restaurant_menu,
+            Colors.purple,
+          ),
+          _DashboardCardData(
+            'Low Stock',
+            (_managerLowStockCount ?? 0).toString(),
+            Icons.inventory_2_outlined,
+            Colors.orange,
+          ),
+          _DashboardCardData(
+            'Top Menu',
+            (_managerTopMenuName ?? '-'),
+            Icons.star_rate_rounded,
+            Colors.amber,
+          ),
         ];
       case 'chef':
         return [
@@ -131,17 +294,66 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         ];
       case 'waiter':
         return [
-          _DashboardCardData('Open Tables', '4', Icons.table_restaurant, Colors.blue),
-          _DashboardCardData('Active Orders', '7', Icons.receipt_long, Colors.green),
-          _DashboardCardData('Bills', '2', Icons.payments_outlined, Colors.purple),
-          _DashboardCardData('Notifications', '1', Icons.notifications_none, Colors.orange),
+          _DashboardCardData(
+            'Open Tables',
+            (_waiterTablesAssigned ?? 0).toString(),
+            Icons.table_restaurant,
+            Colors.blue,
+          ),
+          _DashboardCardData(
+            'Active Orders',
+            (_waiterOpenOrders ?? 0).toString(),
+            Icons.receipt_long,
+            Colors.green,
+          ),
+          _DashboardCardData(
+            'Bills',
+            (_waiterBillsCount ?? 0).toString(),
+            Icons.payments_outlined,
+            Colors.purple,
+            onTap: () {
+              Navigator.of(context).pushNamed('/notifications');
+            },
+          ),
+          _DashboardCardData(
+            'Notifications',
+            (_waiterUnreadNotifications ?? 0).toString(),
+            Icons.notifications_none,
+            Colors.orange,
+            onTap: () {
+              Navigator.of(context).pushNamed('/notifications');
+            },
+          ),
         ];
       case 'manager':
         return [
-          _DashboardCardData('Revenue', 'Fr 250k', Icons.trending_up, Colors.green),
-          _DashboardCardData('Orders Today', '24', Icons.receipt_long, Colors.blue),
-          _DashboardCardData('Active Menus', '12', Icons.restaurant_menu, Colors.purple),
-          _DashboardCardData('Low Stock', '5', Icons.inventory_2_outlined, Colors.orange),
+          _DashboardCardData(
+            'Revenue',
+            _formatRevenue(_managerTotalRevenue),
+            Icons.trending_up,
+            Colors.green,
+          ),
+          _DashboardCardData(
+            'Orders',
+            (_managerTotalOrders ?? 0).toString(),
+            Icons.receipt_long,
+            Colors.blue,
+          ),
+          _DashboardCardData(
+            'Active Menus',
+            (_managerActiveMenus ?? 0).toString(),
+            Icons.restaurant_menu,
+            Colors.purple,
+          ),
+          _DashboardCardData(
+            'Low Stock',
+            (_managerLowStockCount ?? 0).toString(),
+            Icons.inventory_2_outlined,
+            Colors.orange,
+            onTap: () {
+              Navigator.of(context).pushNamed('/inventory');
+            },
+          ),
         ];
       default:
         return [
@@ -195,20 +407,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         scale: _fabScaleAnimation,
         child: FloatingActionButton.extended(
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Row(
-                  children: [
-                    Icon(Icons.add_circle_outline, color: Colors.white),
-                    SizedBox(width: 12),
-                    Text('Create order (coming soon)'),
-                  ],
-                ),
-                backgroundColor: const Color(0xFF34D399),
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const OrderScreen(),
               ),
             );
           },
@@ -289,7 +490,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   clipBehavior: Clip.antiAlias,
                   child: _pictureUrl != null && _pictureUrl!.isNotEmpty
                       ? Image.network(
-                    _pictureUrl!,
+                    _resolvePictureUrl(_pictureUrl),
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return _buildAvatarInitials(initials, roleCapitalized);
@@ -511,10 +712,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       case 0:
         return _buildDashboard(roleCapitalized, cards);
       case 1:
-        return _buildComingSoon('Orders', Icons.receipt_long);
+        return const OrdersListScreen();
       case 2:
-        return _buildComingSoon('Menus', Icons.restaurant_menu);
+        return const MenuScreen();
       case 3:
+        final normalizedRole = (_role ?? '').toLowerCase();
+        if (normalizedRole == 'admin' || normalizedRole == 'manager') {
+          return const PaymentsListScreen();
+        }
         return _buildComingSoon('Payments', Icons.payments);
       case 4:
         return ProfileTabContent(
@@ -661,12 +866,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
 // ✅ Dashboard Card Data Model
 class _DashboardCardData {
-  const _DashboardCardData(this.title, this.value, this.icon, this.color);
+  const _DashboardCardData(this.title, this.value, this.icon, this.color, {this.onTap});
 
   final String title;
   final String value;
   final IconData icon;
   final Color color;
+  final VoidCallback? onTap;
 }
 
 // ✅ Animated Dashboard Card
@@ -718,7 +924,9 @@ class _DashboardCardState extends State<_DashboardCard> with SingleTickerProvide
       opacity: _fadeAnimation,
       child: ScaleTransition(
         scale: _scaleAnimation,
-        child: Container(
+        child: GestureDetector(
+          onTap: widget.data.onTap,
+          child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -783,6 +991,7 @@ class _DashboardCardState extends State<_DashboardCard> with SingleTickerProvide
           ),
         ),
       ),
+    ),
     );
   }
 }

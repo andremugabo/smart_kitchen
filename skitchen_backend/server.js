@@ -35,6 +35,8 @@ import orderDetailRoutes from './src/routes/orderDetailRoutes.js';
 import notificationRoutes from './src/routes/notificationRoutes.js';
 import reportRoutes from './src/routes/reportRoutes.js';
 import paymentRoutes from './src/routes/paymentRoutes.js';
+import settingsRoutes from './src/routes/settingsRoutes.js';
+import orderChangeRequestRoutes from './src/routes/orderChangeRequestRoutes.js';
 
 app.use(express.json());
 
@@ -67,6 +69,8 @@ app.use('/api/order-details', orderDetailRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/order-change-requests', orderChangeRequestRoutes);
 
 // Health check
 app.get('/', (req, res) => {

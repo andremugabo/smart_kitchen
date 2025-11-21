@@ -3,6 +3,8 @@ import {
   getMenuPerformance,
   getPurchaseSummary,
   getSalesOverTime,
+  getWaiterPerformance,
+  getChefPerformance,
 } from "../services/reportService.js";
 
 export const getSalesSummaryController = async (req, res) => {
@@ -39,6 +41,26 @@ export const getSalesOverTimeController = async (req, res) => {
   try {
     const { from, to } = req.query;
     const data = await getSalesOverTime({ from, to });
+    res.json({ success: true, data });
+  } catch (e) {
+    res.status(400).json({ success: false, error: e.message });
+  }
+};
+
+export const getWaiterPerformanceController = async (req, res) => {
+  try {
+    const { from, to } = req.query;
+    const data = await getWaiterPerformance({ from, to });
+    res.json({ success: true, data });
+  } catch (e) {
+    res.status(400).json({ success: false, error: e.message });
+  }
+};
+
+export const getChefPerformanceController = async (req, res) => {
+  try {
+    const { from, to } = req.query;
+    const data = await getChefPerformance({ from, to });
     res.json({ success: true, data });
   } catch (e) {
     res.status(400).json({ success: false, error: e.message });

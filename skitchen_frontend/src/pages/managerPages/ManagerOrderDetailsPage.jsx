@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../services/api";
+import { listMenus } from "../../services/menuService";
 import { PageShell, Card, Spinner, Alert, Button, Input } from "../../components";
 import { listPayments, createPayment } from "../../services/paymentService";
 
@@ -19,6 +20,10 @@ const ManagerOrderDetailsPage = () => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [changeRequests, setChangeRequests] = useState([]);
+  const [changeRequestsLoading, setChangeRequestsLoading] = useState(false);
+  const [changeRequestsError, setChangeRequestsError] = useState("");
+  const [changeRequestsActionId, setChangeRequestsActionId] = useState(null);
   const [payments, setPayments] = useState([]);
   const [paymentsMeta, setPaymentsMeta] = useState(null);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
@@ -26,9 +31,14 @@ const ManagerOrderDetailsPage = () => {
   const [payAmount, setPayAmount] = useState("");
   const [payMethod, setPayMethod] = useState("cash");
   const [paySaving, setPaySaving] = useState(false);
+  const [menus, setMenus] = useState([]);
+  const [adding, setAdding] = useState(false);
+  const [addMenuId, setAddMenuId] = useState("");
+  const [addQuantity, setAddQuantity] = useState("1");
+  const [addNote, setAddNote] = useState("");
 
   useEffect(() => {
-    const load = async () => {
+    const loadOrder = async () => {
       setLoading(true);
       setError("");
       try {
@@ -57,8 +67,34 @@ const ManagerOrderDetailsPage = () => {
       }
     };
 
-    load();
+    const loadChangeRequests = async () => {
+      setChangeRequestsLoading(true);
+      setChangeRequestsError("");
+      try {
+        const res = await api.get("/order-change-requests", {
+          params: { order_id: id },
+        });
+        setChangeRequests(res.data?.data || []);
+      } catch (err) {
+        const msg = err?.response?.data?.error || "Failed to load change requests";
+        setChangeRequestsError(msg);
+      } finally {
+        setChangeRequestsLoading(false);
+      }
+    };
+    const loadMenus = async () => {
+      try {
+        const res = await listMenus({ page: 1, limit: 200 });
+        setMenus(res.data || []);
+      } catch (err) {
+        // keep non-fatal
+      }
+    };
+
+    loadOrder();
     loadPayments();
+    loadChangeRequests();
+    loadMenus();
   }, [id]);
 
   const items = order?.OrderDetails || [];
@@ -67,6 +103,82 @@ const ManagerOrderDetailsPage = () => {
     .filter((p) => p.status === "paid")
     .reduce((sum, p) => sum + Number(p.amount || 0), 0);
   const outstanding = Math.max(0, totalAmount - totalPaid);
+  const status = order?.status || "";
+  const canAddItems =
+    status !== "served" && status !== "completed" && status !== "canceled";
+
+  const handleAddItem = async (e) => {
+    e.preventDefault();
+    if (!order?.id) return;
+    const quantityNum = Number(addQuantity || 0);
+    if (!addMenuId || !quantityNum || Number.isNaN(quantityNum) || quantityNum <= 0) {
+      setPaymentsError("Select a menu and enter a valid quantity.");
+      return;
+    }
+
+    setPaymentsError("");
+    setAdding(true);
+    try {
+      await api.post(`/orders/${order.id}/items`, {
+        items: [
+          {
+            menu_id: addMenuId,
+            quantity: quantityNum,
+            kitchen_note: addNote || undefined,
+          },
+        ],
+      });
+
+      await refreshAll();
+      setAddMenuId("");
+      setAddQuantity("1");
+      setAddNote("");
+    } catch (err) {
+      const msg = err?.response?.data?.error || "Failed to add item";
+      setPaymentsError(msg);
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const refreshAll = async () => {
+    try {
+      const [orderRes, paymentsRes, changesRes] = await Promise.all([
+        api.get(`/orders/${id}`),
+        listPayments({ orderId: id, page: 1, limit: 50 }),
+        api.get("/order-change-requests", { params: { order_id: id } }),
+      ]);
+      setOrder(orderRes.data?.data || null);
+      setPayments(paymentsRes.data || []);
+      setPaymentsMeta(paymentsRes.meta || null);
+      setChangeRequests(changesRes.data?.data || []);
+    } catch (err) {
+      // keep individual errors handled where they occur
+    }
+  };
+
+  const handleChangeRequestAction = async (requestId, action) => {
+    if (!requestId || !action) return;
+    setChangeRequestsActionId(requestId);
+    setChangeRequestsError("");
+    try {
+      if (action === "approve") {
+        await api.post(`/order-change-requests/${requestId}/approve`, {
+          response_message: "Approved by manager",
+        });
+      } else {
+        await api.post(`/order-change-requests/${requestId}/reject`, {
+          response_message: "Rejected by manager",
+        });
+      }
+      await refreshAll();
+    } catch (err) {
+      const msg = err?.response?.data?.error || "Failed to process change request";
+      setChangeRequestsError(msg);
+    } finally {
+      setChangeRequestsActionId(null);
+    }
+  };
 
   const handleCreatePayment = async (e) => {
     e.preventDefault();
@@ -162,20 +274,168 @@ const ManagerOrderDetailsPage = () => {
 
           <Card>
             <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-semibold text-slate-100">Order change requests</h2>
+              <Button
+                type="button"
+                variant="ghost"
+                className="px-3 py-1 text-[11px]"
+                onClick={refreshAll}
+              >
+                Refresh
+              </Button>
+            </div>
+
+            {changeRequestsError && (
+              <Alert variant="error" className="mb-2 text-[11px]">
+                {changeRequestsError}
+              </Alert>
+            )}
+
+            {changeRequestsLoading ? (
+              <div className="flex items-center justify-center py-6">
+                <Spinner className="w-5 h-5" />
+              </div>
+            ) : changeRequests.length === 0 ? (
+              <p className="text-sm text-slate-400">No change requests for this order.</p>
+            ) : (
+              <div className="overflow-x-auto text-xs">
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="border-b border-slate-800 text-slate-300">
+                      <th className="px-2 py-1 text-left">Type</th>
+                      <th className="px-2 py-1 text-left">Status</th>
+                      <th className="px-2 py-1 text-left">Reason</th>
+                      <th className="px-2 py-1 text-left">Item</th>
+                      <th className="px-2 py-1 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {changeRequests.map((r) => {
+                      const detail = r.OrderDetail || {};
+                      const typeLabel =
+                        r.type === "void_order"
+                          ? "Void order"
+                          : r.type === "cancel_order"
+                          ? "Cancel order"
+                          : "Remove item";
+                      const statusLabel = r.status || "-";
+                      const itemLabel = detail.id
+                        ? `Item x${detail.quantity || "?"}`
+                        : "-";
+
+                      const isPending = r.status === "pending";
+
+                      return (
+                        <tr key={r.id} className="border-b border-slate-900">
+                          <td className="px-2 py-1">{typeLabel}</td>
+                          <td className="px-2 py-1 capitalize">{statusLabel}</td>
+                          <td className="px-2 py-1 text-slate-400 max-w-xs truncate">
+                            {r.reason || "-"}
+                          </td>
+                          <td className="px-2 py-1">{itemLabel}</td>
+                          <td className="px-2 py-1 text-right">
+                            {isPending ? (
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="px-2 py-1 text-[11px]"
+                                  disabled={changeRequestsActionId === r.id}
+                                  onClick={() => handleChangeRequestAction(r.id, "approve")}
+                                >
+                                  {changeRequestsActionId === r.id
+                                    ? "Processing..."
+                                    : "Approve"}
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  className="px-2 py-1 text-[11px]"
+                                  disabled={changeRequestsActionId === r.id}
+                                  onClick={() => handleChangeRequestAction(r.id, "reject")}
+                                >
+                                  Reject
+                                </Button>
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-slate-500">
+                                {r.response_message || "Processed"}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+
+          <Card>
+            <div className="flex items-center justify-between mb-2">
               <h2 className="text-sm font-semibold text-slate-100">Payments</h2>
-              <div className="text-[11px] text-slate-300 text-right space-y-0.5">
-                <div>
-                  Total: <span className="font-semibold">{totalAmount.toFixed(2)}</span>
-                </div>
-                <div>
-                  Paid: <span className="text-emerald-400">{totalPaid.toFixed(2)}</span>
-                </div>
-                <div>
-                  Outstanding: <span className={outstanding > 0 ? "text-orange-300" : "text-emerald-400"}>{outstanding.toFixed(2)}</span>
+              <div className="flex flex-wrap items-center gap-2 justify-end text-[11px]">
+                <form
+                  onSubmit={handleAddItem}
+                  className="flex flex-wrap items-center gap-2 text-[11px] mr-4"
+                >
+                  <select
+                    className="bg-slate-900 border border-slate-700 rounded-md px-2 py-1"
+                    value={addMenuId}
+                    onChange={(e) => setAddMenuId(e.target.value)}
+                    disabled={!canAddItems}
+                  >
+                    <option value="">Add menu...</option>
+                    {menus.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
+                    ))}
+                  </select>
+                  <Input
+                    label="Qty"
+                    type="number"
+                    className="w-20"
+                    value={addQuantity}
+                    onChange={(e) => setAddQuantity(e.target.value)}
+                    disabled={!canAddItems}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Note (optional)"
+                    className="bg-slate-900 border border-slate-700 rounded-md px-2 py-1 text-xs"
+                    value={addNote}
+                    onChange={(e) => setAddNote(e.target.value)}
+                    disabled={!canAddItems}
+                  />
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    className="px-3 py-1 text-[11px]"
+                    disabled={adding || !canAddItems}
+                  >
+                    {adding ? "Adding..." : "Add item"}
+                  </Button>
+                </form>
+                {!canAddItems && (
+                  <span className="text-[10px] text-slate-500">
+                    Order is {status || "updated"}; cannot add more items.
+                  </span>
+                )}
+                <div className="text-[11px] text-slate-300 text-right space-y-0.5">
+                  <div>
+                    Total: <span className="font-semibold">{totalAmount.toFixed(2)}</span>
+                  </div>
+                  <div>
+                    Paid: <span className="text-emerald-400">{totalPaid.toFixed(2)}</span>
+                  </div>
+                  <div>
+                    Outstanding: <span className={outstanding > 0 ? "text-orange-300" : "text-emerald-400"}>{outstanding.toFixed(2)}</span>
+                  </div>
                 </div>
               </div>
             </div>
-
             {paymentsError && (
               <Alert variant="error" className="mb-2 text-[11px]">
                 {paymentsError}

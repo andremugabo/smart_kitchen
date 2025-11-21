@@ -14,6 +14,7 @@ const managerLinks = [
   { label: "Menu Categories", path: "/app/manager/menu-categories" },
   { label: "Menu", path: "/app/manager/menu" },
   { label: "Orders", path: "/app/manager/orders" },
+  { label: "Order change requests", path: "/app/manager/order-change-requests" },
   { label: "Payments", path: "/app/manager/payments" },
   { label: "Reports", path: "/app/manager/reports" },
 ];

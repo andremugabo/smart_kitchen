@@ -5,6 +5,8 @@ import {
   getMenuPerformanceController,
   getPurchaseSummaryController,
   getSalesOverTimeController,
+  getWaiterPerformanceController,
+  getChefPerformanceController,
 } from "../controllers/reportController.js";
 
 const router = express.Router();
@@ -13,5 +15,7 @@ router.get("/sales-summary", authenticate("admin", "manager", "chef", "waiter"),
 router.get("/menu-performance", authenticate("admin", "manager", "chef"), getMenuPerformanceController);
 router.get("/purchase-summary", authenticate("admin", "manager"), getPurchaseSummaryController);
 router.get("/sales-over-time", authenticate("admin", "manager", "chef", "waiter"), getSalesOverTimeController);
+router.get("/waiter-performance", authenticate("admin", "manager"), getWaiterPerformanceController);
+router.get("/chef-performance", authenticate("admin", "manager"), getChefPerformanceController);
 
 export default router;

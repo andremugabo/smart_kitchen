@@ -10,6 +10,7 @@ import {
   deleteOrder,
   getKitchenOrders,
   getCurrentWaiterOrders,
+  addItemsToOrder,
 } from "../services/orderService.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -23,6 +24,21 @@ export const listOrdersController = async (req, res) => {
     res.json({ success: true, data: items });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
+  }
+};
+
+export const addItemsToOrderController = async (req, res) => {
+  try {
+    const { items } = req.body;
+    if (!items) {
+      return res
+        .status(400)
+        .json({ success: false, error: "items are required" });
+    }
+    const order = await addItemsToOrder(req.params.id, items);
+    res.json({ success: true, data: order });
+  } catch (e) {
+    res.status(400).json({ success: false, error: e.message });
   }
 };
 

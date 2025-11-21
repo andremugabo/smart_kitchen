@@ -13,8 +13,10 @@ import MenuModel from "./menu.js";
 import RecipeModel from "./recipe.js";
 import OrderModel from "./order.js";
 import OrderDetailModel from "./orderDetail.js";
+import OrderChangeRequestModel from "./orderChangeRequest.js";
 import PaymentModel from "./payment.js";
 import NotificationModel from "./notification.js";
+import SettingsModel from "./settings.js";
 
 const Unit = UnitModel(sequelize, DataTypes);
 const ProductType = ProductTypeModel(sequelize, DataTypes);
@@ -28,8 +30,10 @@ const Menu = MenuModel(sequelize, DataTypes);
 const Recipe = RecipeModel(sequelize, DataTypes);
 const Order = OrderModel(sequelize, DataTypes);
 const OrderDetail = OrderDetailModel(sequelize, DataTypes);
+const OrderChangeRequest = OrderChangeRequestModel(sequelize, DataTypes);
 const Payment = PaymentModel(sequelize, DataTypes);
 const Notification = NotificationModel(sequelize, DataTypes);
+const Settings = SettingsModel(sequelize, DataTypes);
 
 // Relationships
 ProductType.hasMany(ProductCategory, { foreignKey: "type_id" });
@@ -67,6 +71,10 @@ OrderDetail.belongsTo(Order, { foreignKey: "order_id" });
 Menu.hasMany(OrderDetail, { foreignKey: "menu_id" });
 OrderDetail.belongsTo(Menu, { foreignKey: "menu_id" });
 
+// Chef preparing items
+User.hasMany(OrderDetail, { foreignKey: "chef_id", as: "PreparedItems" });
+OrderDetail.belongsTo(User, { foreignKey: "chef_id", as: "Chef" });
+
 Order.hasMany(Payment, { foreignKey: "order_id" });
 Payment.belongsTo(Order, { foreignKey: "order_id" });
 
@@ -76,6 +84,12 @@ Notification.belongsTo(User, { foreignKey: "user_id" });
 
 Order.hasMany(Notification, { foreignKey: "order_id" });
 Notification.belongsTo(Order, { foreignKey: "order_id" });
+
+Order.hasMany(OrderChangeRequest, { foreignKey: "order_id" });
+OrderChangeRequest.belongsTo(Order, { foreignKey: "order_id" });
+
+OrderDetail.hasMany(OrderChangeRequest, { foreignKey: "order_detail_id" });
+OrderChangeRequest.belongsTo(OrderDetail, { foreignKey: "order_detail_id" });
 
 // DB connection test
 export const connectDB = async () => {
@@ -102,6 +116,8 @@ export {
   Recipe,
   Order,
   OrderDetail,
+  OrderChangeRequest,
   Payment,
   Notification,
+  Settings,
 };

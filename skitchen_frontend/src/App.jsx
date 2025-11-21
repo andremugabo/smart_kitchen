@@ -6,6 +6,7 @@ import { setUser } from './store/userSlice';
 import { router } from './routes/index';
 import ErrorBoundary from './components/ErrorBoundary';
 import './App.css';
+import { logout } from './services/authService';
 
 const AppInner = () => {
   const dispatch = useDispatch();
@@ -23,6 +24,36 @@ const AppInner = () => {
       // ignore corrupted localStorage
     }
   }, [dispatch]);
+
+  useEffect(() => {
+    let timerId;
+    const INACTIVITY_LIMIT_MS = 5 * 60 * 1000; // 5 minutes
+
+    const resetTimer = () => {
+      if (timerId) clearTimeout(timerId);
+
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      timerId = setTimeout(() => {
+        logout('inactive');
+      }, INACTIVITY_LIMIT_MS);
+    };
+
+    const events = ['mousemove', 'keydown', 'click', 'scroll', 'focus'];
+    events.forEach((event) =>
+      window.addEventListener(event, resetTimer, { passive: true })
+    );
+
+    resetTimer();
+
+    return () => {
+      if (timerId) clearTimeout(timerId);
+      events.forEach((event) =>
+        window.removeEventListener(event, resetTimer)
+      );
+    };
+  }, []);
 
   return (
     <ErrorBoundary>

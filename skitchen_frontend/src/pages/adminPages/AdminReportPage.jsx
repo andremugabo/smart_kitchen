@@ -19,6 +19,8 @@ const AdminReportPage = () => {
   const [purchaseSummary, setPurchaseSummary] = useState(null);
   const [salesOverTime, setSalesOverTime] = useState([]);
   const [paymentSummary, setPaymentSummary] = useState(null);
+  const [waiterPerformance, setWaiterPerformance] = useState([]);
+  const [chefPerformance, setChefPerformance] = useState([]);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [loading, setLoading] = useState(true);
@@ -32,20 +34,31 @@ const AdminReportPage = () => {
       if (from) params.from = from;
       if (to) params.to = to;
 
-      const [salesRes, menuRes, purchaseRes, overTimeRes, paymentsSummaryRes] =
-        await Promise.all([
-          api.get("/reports/sales-summary", { params }),
-          api.get("/reports/menu-performance", { params }),
-          api.get("/reports/purchase-summary", { params }),
-          api.get("/reports/sales-over-time", { params }),
-          api.get("/payments/summary", { params }),
-        ]);
+      const [
+        salesRes,
+        menuRes,
+        purchaseRes,
+        overTimeRes,
+        paymentsSummaryRes,
+        waiterPerfRes,
+        chefPerfRes,
+      ] = await Promise.all([
+        api.get("/reports/sales-summary", { params }),
+        api.get("/reports/menu-performance", { params }),
+        api.get("/reports/purchase-summary", { params }),
+        api.get("/reports/sales-over-time", { params }),
+        api.get("/payments/summary", { params }),
+        api.get("/reports/waiter-performance", { params }),
+        api.get("/reports/chef-performance", { params }),
+      ]);
 
       setSalesSummary(salesRes.data?.data ?? null);
       setMenuPerformance(menuRes.data?.data ?? []);
       setPurchaseSummary(purchaseRes.data?.data ?? null);
       setSalesOverTime(overTimeRes.data?.data ?? []);
       setPaymentSummary(paymentsSummaryRes.data?.data ?? null);
+      setWaiterPerformance(waiterPerfRes.data?.data ?? []);
+      setChefPerformance(chefPerfRes.data?.data ?? []);
     } catch (err) {
       const msg = err?.response?.data?.error || "Failed to load reports";
       setError(msg);
@@ -260,6 +273,81 @@ const AdminReportPage = () => {
               )}
             </Card>
           </div>
+
+          {(Array.isArray(waiterPerformance) && waiterPerformance.length > 0) ||
+          (Array.isArray(chefPerformance) && chefPerformance.length > 0) ? (
+            <div className="grid gap-4 lg:grid-cols-2 mb-6">
+              <Card title="Per-Waiter Performance">
+                {Array.isArray(waiterPerformance) && waiterPerformance.length > 0 ? (
+                  <div className="overflow-x-auto text-sm">
+                    <table className="min-w-full text-left">
+                      <thead className="text-xs uppercase text-slate-400 border-b border-slate-800">
+                        <tr>
+                          <th className="py-2 pr-4">Waiter</th>
+                          <th className="py-2 pr-4">Orders Served</th>
+                          <th className="py-2 pr-4">Avg Order Value</th>
+                          <th className="py-2 pr-4">Peak Hour</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {waiterPerformance.map((w) => (
+                          <tr key={w.waiterId} className="border-b border-slate-900 last:border-b-0">
+                            <td className="py-2 pr-4 text-slate-200">{w.waiterName}</td>
+                            <td className="py-2 pr-4">{w.totalOrdersServed || 0}</td>
+                            <td className="py-2 pr-4">
+                              {w.averageOrderValue
+                                ? Number(w.averageOrderValue).toFixed(1)
+                                : "0.0"}
+                            </td>
+                            <td className="py-2 pr-4 text-xs text-slate-400">
+                              {w.peakHour != null ? `${w.peakHour}:00 - ${w.peakHour}:59` : "-"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-40 text-slate-500">
+                    <p className="text-sm">No waiter performance data</p>
+                  </div>
+                )}
+              </Card>
+
+              <Card title="Per-Chef Performance">
+                {Array.isArray(chefPerformance) && chefPerformance.length > 0 ? (
+                  <div className="overflow-x-auto text-sm">
+                    <table className="min-w-full text-left">
+                      <thead className="text-xs uppercase text-slate-400 border-b border-slate-800">
+                        <tr>
+                          <th className="py-2 pr-4">Chef</th>
+                          <th className="py-2 pr-4">Dishes Prepared</th>
+                          <th className="py-2 pr-4">Avg Prep Time (min)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {chefPerformance.map((c) => (
+                          <tr key={c.chefId} className="border-b border-slate-900 last:border-b-0">
+                            <td className="py-2 pr-4 text-slate-200">{c.chefName}</td>
+                            <td className="py-2 pr-4">{c.dishesPrepared || 0}</td>
+                            <td className="py-2 pr-4">
+                              {c.averagePreparationTimeMinutes != null
+                                ? Number(c.averagePreparationTimeMinutes).toFixed(1)
+                                : "-"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-40 text-slate-500">
+                    <p className="text-sm">No chef performance data</p>
+                  </div>
+                )}
+              </Card>
+            </div>
+          ) : null}
 
           {Array.isArray(salesOverTime) && salesOverTime.length > 0 && (
             <div className="grid gap-4 lg:grid-cols-2">

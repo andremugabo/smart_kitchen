@@ -31,6 +31,8 @@ export { default as AdminMenuCategoriesPage } from './adminPages/AdminMenuCatego
 export { default as AdminOrderDetailsPage } from './adminPages/AdminOrderDetailsPage'
 export { default as AdminPaymentsPage } from './adminPages/AdminPaymentsPage'
 export { default as AdminReportPage } from './adminPages/AdminReportPage'
+export { default as AdminSettingsPage } from './adminPages/AdminSettingsPage'
+export { default as AdminChangeRequestsPage } from './adminPages/AdminChangeRequestsPage'
 
 // Chef page
 export { default as ChefDashboard } from './chefPages/ChefDashboard'
@@ -41,6 +43,7 @@ export { default as ManagerOrdersPage } from './managerPages/ManagerOrdersPage'
 export { default as ManagerOrderDetailsPage } from './managerPages/ManagerOrderDetailsPage'
 export { default as ManagerPaymentsPage } from './managerPages/ManagerPaymentsPage'
 export { default as ManagerReportPage } from './managerPages/ManagerReportPage'
+export { default as ManagerChangeRequestsPage } from './managerPages/ManagerChangeRequestsPage'
 
 // Waiter pages
 export { default as WaiterDashboard } from './waiterPages/WaiterDashboard'

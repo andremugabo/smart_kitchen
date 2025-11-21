@@ -9,6 +9,7 @@ import {
   getKitchenOrdersController,
   getCurrentWaiterOrdersController,
   generateOrderReceiptPdfController,
+  addItemsToOrderController,
 } from "../controllers/orderController.js";
 
 const router = express.Router();
@@ -20,7 +21,8 @@ router.get("/:id/receipt", authenticate("admin", "manager"), generateOrderReceip
 router.get("/:id", getOrderController);
 
 router.post("/", authenticate("admin", "manager", "waiter"), createOrderController);
-router.put("/:id/status", authenticate("admin", "manager", "waiter"), updateOrderStatusController);
+router.post("/:id/items", authenticate("admin", "manager", "waiter"), addItemsToOrderController);
+router.put("/:id/status", authenticate("admin", "manager"), updateOrderStatusController);
 router.delete("/:id", authenticate("admin", "manager"), deleteOrderController);
 
 export default router;
