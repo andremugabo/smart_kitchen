@@ -57,7 +57,9 @@ const ChefDashboard = () => {
                   .map((o) => (
                     <li key={o.id} className="border-b border-slate-800 pb-1">
                       <div className="flex justify-between">
-                        <span>Order #{o.id}</span>
+                        <span>
+                          {`ORD-${String(o.id).slice(0, 4).toUpperCase()}`}
+                        </span>
                         <span className="text-slate-300">
                           Table {o.tableNumber ?? "-"}
                         </span>
@@ -88,7 +90,9 @@ const ChefDashboard = () => {
                   .map((o) => (
                     <li key={o.id} className="border-b border-slate-800 pb-1">
                       <div className="flex justify-between">
-                        <span>Order #{o.id}</span>
+                        <span>
+                          {`ORD-${String(o.id).slice(0, 4).toUpperCase()}`}
+                        </span>
                         <span className="text-slate-300">
                           Table {o.tableNumber ?? "-"}
                         </span>

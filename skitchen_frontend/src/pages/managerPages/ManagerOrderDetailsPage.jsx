@@ -107,6 +107,10 @@ const ManagerOrderDetailsPage = () => {
   const canAddItems =
     status !== "served" && status !== "completed" && status !== "canceled";
 
+  const shortRef = order
+    ? `ORD-${String(order.id).slice(0, 4).toUpperCase()}`
+    : `#${id}`;
+
   const handleAddItem = async (e) => {
     e.preventDefault();
     if (!order?.id) return;
@@ -211,7 +215,7 @@ const ManagerOrderDetailsPage = () => {
 
   return (
     <PageShell
-      title={`Order #${id}`}
+      title={`Order ${shortRef}`}
       subtitle="View order details and menu items as cards."
     >
       {error && <Alert variant="error">{error}</Alert>}

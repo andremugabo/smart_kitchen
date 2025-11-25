@@ -15,6 +15,12 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
   String? _role;
   String _statusFilter = 'all';
 
+  String _formatOrderCode(String id) {
+    if (id.isEmpty) return 'ORD-????';
+    final core = id.length > 4 ? id.substring(0, 4) : id;
+    return 'ORD-${core.toUpperCase()}';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -172,6 +178,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
               final table = o['table_number']?.toString() ?? '-';
               final status = o['status']?.toString() ?? '';
               final total = (o['total_amount'] ?? 0).toString();
+              final orderCode = _formatOrderCode(id);
 
               return ListTile(
                 shape: RoundedRectangleBorder(
@@ -179,7 +186,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
                 ),
                 tileColor: const Color(0xFF0F172A),
                 title: Text(
-                  'Table $table',
+                  '$orderCode · Table $table',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,

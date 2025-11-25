@@ -33,13 +33,16 @@ export const getMenuPerformance = async ({ from, to }) => {
     attributes: ["id"],
   });
 
-  if (!orders.length) return [];
+  if (!orders.length) return { items: [] };
 
   const orderIds = orders.map((o) => o.id);
 
   const details = await OrderDetail.findAll({
     where: { order_id: orderIds },
-    include: [{ model: Menu }],
+    include: [
+      { model: Menu },
+      { model: Order },
+    ],
   });
 
   const map = new Map();
@@ -47,6 +50,9 @@ export const getMenuPerformance = async ({ from, to }) => {
   for (const d of details) {
     const menu = d.Menu;
     if (!menu) continue;
+    const order = d.Order;
+    const orderDate = order && order.order_date ? new Date(order.order_date) : null;
+    const dayKey = orderDate ? orderDate.toISOString().slice(0, 10) : null; // YYYY-MM-DD
     const key = menu.id;
     if (!map.has(key)) {
       map.set(key, {
@@ -55,15 +61,46 @@ export const getMenuPerformance = async ({ from, to }) => {
         ordersCount: 0,
         quantitySold: 0,
         revenue: 0,
+        series: new Map(),
       });
     }
     const entry = map.get(key);
+    const qty = Number(d.quantity || 0);
+    const rev = Number(d.price_at_time || 0) * qty;
+
     entry.ordersCount += 1;
-    entry.quantitySold += Number(d.quantity || 0);
-    entry.revenue += Number(d.price_at_time || 0) * Number(d.quantity || 0);
+    entry.quantitySold += qty;
+    entry.revenue += rev;
+
+    if (dayKey) {
+      if (!entry.series.has(dayKey)) {
+        entry.series.set(dayKey, {
+          date: dayKey,
+          quantitySold: 0,
+          revenue: 0,
+        });
+      }
+      const dayEntry = entry.series.get(dayKey);
+      dayEntry.quantitySold += qty;
+      dayEntry.revenue += rev;
+    }
   }
 
-  return Array.from(map.values());
+  const items = Array.from(map.values()).map((entry) => {
+    const seriesArray = Array.from(entry.series.values()).sort((a, b) =>
+      a.date < b.date ? -1 : a.date > b.date ? 1 : 0
+    );
+    return {
+      menuId: entry.menuId,
+      name: entry.name,
+      ordersCount: entry.ordersCount,
+      quantitySold: entry.quantitySold,
+      revenue: entry.revenue,
+      series: seriesArray,
+    };
+  });
+
+  return { items };
 };
 
 export const getPurchaseSummary = async ({ from, to }) => {

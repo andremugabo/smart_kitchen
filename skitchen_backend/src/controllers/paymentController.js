@@ -11,7 +11,7 @@ import {
   getReceiptData,
   getPaymentsSummary,
 } from "../services/paymentService.js";
-import { Payment } from "../models/index.js";
+import { Payment, Order, User } from "../models/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -122,16 +122,29 @@ export const generateReceiptPdfController = async (req, res) => {
       .stroke("#dddddd");
     doc.moveDown(0.5);
 
+    const formatTwo = (v) => String(v).padStart(2, "0");
+    const paymentRef = `PAY-${String(payment.id).slice(0, 4).toUpperCase()}`;
+    const orderRef = `ORD-${String(order.id).slice(0, 4).toUpperCase()}`;
+    const dt = payment.payment_date ? new Date(payment.payment_date) : null;
+    const dateLabel = dt
+      ? `${dt.getFullYear()}-${formatTwo(dt.getMonth() + 1)}-${formatTwo(
+          dt.getDate()
+        )} ${formatTwo(dt.getHours())}:${formatTwo(dt.getMinutes())}`
+      : "-";
+
     doc.fontSize(10).fillColor("#000000");
-    doc.text(`Receipt ID: ${payment.id}`);
-    doc.text(`Order ID: ${order.id}`);
+    doc.text(`Payment: ${paymentRef}`);
+    doc.text(`Order: ${orderRef}`);
     if (user) {
       const name = user.username || user.name || user.full_name || user.email;
       if (name) {
-        doc.text(`Customer: ${name}`);
+        doc.text(`Waiter: ${name}`);
       }
     }
-    doc.text(`Payment Date: ${new Date(payment.payment_date).toLocaleString()}`);
+    if (order && order.table_number) {
+      doc.text(`Table: ${order.table_number}`);
+    }
+    doc.text(`Payment Date: ${dateLabel}`);
     doc.text(`Method: ${payment.method}`);
     doc.text(`Status: ${payment.status}`);
 
@@ -178,13 +191,28 @@ export const generateReceiptPdfController = async (req, res) => {
       .stroke("#000000");
     doc.moveDown(0.5);
 
-    const paymentRef = `PAY-${String(payment.id).slice(0, 8).toUpperCase()}`;
-    const orderRef = `ORD-${String(order.id).slice(0, 8).toUpperCase()}`;
+    const qrPayload = {
+      type: "payment",
+      orderId: order.id,
+      orderRef,
+      paymentId: payment.id,
+      paymentRef,
+      amount: Number(payment.amount || 0),
+      status: payment.status,
+      method: payment.method,
+      date: payment.payment_date,
+    };
 
-    doc
-      .fontSize(10)
-      .fillColor("#0f172a")
-      .text(`Payment: ${paymentRef}`);
+    const qrBuffer = await QRCode.toBuffer(JSON.stringify(qrPayload), {
+      width: 120,
+      margin: 1,
+    });
+
+    doc.moveDown(0.5);
+    doc.image(qrBuffer, {
+      fit: [50, 50],
+      align: "center",
+    });
     doc
       .fontSize(10)
       .fillColor("#0f172a")
@@ -256,6 +284,12 @@ export const generatePaymentsReportPdfController = async (req, res) => {
     const payments = await Payment.findAll({
       where,
       order: [["payment_date", "ASC"]],
+      include: [
+        {
+          model: Order,
+          include: [User],
+        },
+      ],
     });
 
     let totalAmount = 0;
@@ -367,7 +401,7 @@ export const generatePaymentsReportPdfController = async (req, res) => {
       .fontSize(10)
       .fillColor("#4b5563")
       .text("Date / Time", { continued: true })
-      .text("    | Order", { continued: true })
+      .text("    | Payment / Order", { continued: true })
       .text("    | Method", { continued: true })
       .text("    | Status", { continued: true })
       .text("    | Amount");
@@ -379,11 +413,29 @@ export const generatePaymentsReportPdfController = async (req, res) => {
       .stroke("#e5e7eb");
     doc.moveDown(0.25);
 
+    const formatTwo = (v) => String(v).padStart(2, "0");
+
     payments.forEach((p) => {
-      const dt = p.payment_date
-        ? new Date(p.payment_date).toLocaleString()
+      const dtObj = p.payment_date ? new Date(p.payment_date) : null;
+      const dt = dtObj
+        ? `${dtObj.getFullYear()}-${formatTwo(dtObj.getMonth() + 1)}-${formatTwo(
+            dtObj.getDate()
+          )} ${formatTwo(dtObj.getHours())}:${formatTwo(dtObj.getMinutes())}`
         : "-";
-      const baseText = `${dt} | ${p.order_id} | ${p.method}`;
+      const paymentRef = `PAY-${String(p.id).slice(0, 4).toUpperCase()}`;
+      const orderRef = p.order_id
+        ? `ORD-${String(p.order_id).slice(0, 4).toUpperCase()}`
+        : "-";
+      const order = p.Order;
+      const customerName =
+        order && order.User
+          ? order.User.username ||
+            order.User.name ||
+            order.User.full_name ||
+            order.User.email
+          : null;
+      const tableNumber = order ? order.table_number : null;
+      const baseText = `${dt} | ${paymentRef} / ${orderRef} | ${p.method}`;
       const amountText = Number(p.amount).toFixed(2);
 
       // Color status text
@@ -416,6 +468,18 @@ export const generatePaymentsReportPdfController = async (req, res) => {
         .text(p.status, { continued: true })
         .fillColor("#111827")
         .text(" | " + amountText);
+
+      if (customerName || tableNumber) {
+        doc
+          .moveDown(0.05)
+          .fontSize(8)
+          .fillColor("#6b7280")
+          .text(
+            `    ${customerName || "Guest"}${
+              tableNumber ? ` · Table ${tableNumber}` : ""
+            }`
+          );
+      }
 
       doc.moveDown(0.1);
     });

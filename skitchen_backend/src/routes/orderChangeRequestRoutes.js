@@ -12,8 +12,8 @@ const router = express.Router();
 // Waiter creates request
 router.post("/", authenticate("waiter", "admin", "manager"), createOrderChangeRequestController);
 
-// Admin/manager views and acts on requests
-router.get("/", authenticate("admin", "manager"), listOrderChangeRequestsController);
+// Admin/manager/waiter can view requests; only admin/manager can approve/reject
+router.get("/", authenticate("admin", "manager", "waiter"), listOrderChangeRequestsController);
 router.post("/:id/approve", authenticate("admin", "manager"), approveOrderChangeRequestController);
 router.post("/:id/reject", authenticate("admin", "manager"), rejectOrderChangeRequestController);
 

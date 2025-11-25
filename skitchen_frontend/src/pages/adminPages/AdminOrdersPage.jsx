@@ -163,7 +163,7 @@ const AdminOrdersPage = () => {
                     const isPaid = Array.isArray(o.Payments)
                       ? o.Payments.some((p) => p.status === "paid")
                       : false;
-                    const orderRef = `ORD-${String(o.id).slice(0, 8).toUpperCase()}`;
+                    const orderRef = `ORD-${String(o.id).slice(0, 4).toUpperCase()}`;
                     const customerName = o.User
                       ? o.User.username || o.User.name || o.User.full_name || o.User.email
                       : null;

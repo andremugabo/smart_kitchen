@@ -86,3 +86,4 @@ yarn-debug.log*
 yarn-error.log*
 *.tgz
 *.zip
+/smart_kitchen_desktop/nbproject/private/

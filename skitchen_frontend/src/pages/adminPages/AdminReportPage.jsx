@@ -53,7 +53,13 @@ const AdminReportPage = () => {
       ]);
 
       setSalesSummary(salesRes.data?.data ?? null);
-      setMenuPerformance(menuRes.data?.data ?? []);
+      const rawMenuPerf = menuRes.data?.data;
+      const menuItems = Array.isArray(rawMenuPerf)
+        ? rawMenuPerf
+        : Array.isArray(rawMenuPerf?.items)
+        ? rawMenuPerf.items
+        : [];
+      setMenuPerformance(menuItems);
       setPurchaseSummary(purchaseRes.data?.data ?? null);
       setSalesOverTime(overTimeRes.data?.data ?? []);
       setPaymentSummary(paymentsSummaryRes.data?.data ?? null);
@@ -235,7 +241,7 @@ const AdminReportPage = () => {
 
             <Card title="Menu Performance" className="lg:col-span-2">
               {Array.isArray(menuPerformance) && menuPerformance.length > 0 ? (
-                <div className="w-full h-80">
+                <div className="w-full h-80" style={{ minWidth: 0 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={menuPerformance.slice(0, 10)}
@@ -352,7 +358,7 @@ const AdminReportPage = () => {
           {Array.isArray(salesOverTime) && salesOverTime.length > 0 && (
             <div className="grid gap-4 lg:grid-cols-2">
               <Card title="Revenue Over Time">
-                <div className="w-full h-80">
+                <div className="w-full h-80" style={{ minWidth: 0 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={salesOverTime}

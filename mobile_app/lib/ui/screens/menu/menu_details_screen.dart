@@ -35,6 +35,8 @@ class _MenuDetailsScreenState extends State<MenuDetailsScreen>
   bool _adding = false;
   String? _error;
   String? _orderId;
+  String? _inlineSuccess;
+  bool _orderLocked = false;
 
   String _resolvePictureUrl(String? picture) {
     if (picture == null || picture.isEmpty) return '';
@@ -106,6 +108,7 @@ class _MenuDetailsScreenState extends State<MenuDetailsScreen>
     if (_quantity <= 0) {
       setState(() {
         _error = 'Quantity must be at least 1';
+        _inlineSuccess = null;
       });
       return;
     }
@@ -113,9 +116,52 @@ class _MenuDetailsScreenState extends State<MenuDetailsScreen>
     setState(() {
       _error = null;
       _adding = true;
+      _inlineSuccess = null;
     });
 
     try {
+      // If we already have an order, make sure it's still editable.
+      if (_orderId != null) {
+        if (_orderLocked) {
+          setState(() {
+            _error = 'This order is already paid or closed. You cannot add more items.';
+            _adding = false;
+          });
+          return;
+        }
+
+        try {
+          final order = await _orderService.getOrder(_orderId!);
+          final status = (order['status'] ?? '').toString().toLowerCase();
+          final isClosed = [
+            'paid',
+            'served',
+            'completed',
+            'canceled',
+            'cancelled',
+          ].contains(status);
+
+          if (isClosed) {
+            if (mounted) {
+              setState(() {
+                _orderLocked = true;
+                _error = 'This order is already paid or closed. You cannot add more items.';
+                _adding = false;
+              });
+            }
+            return;
+          }
+        } catch (_) {
+          if (mounted) {
+            setState(() {
+              _error = 'Unable to verify order status. Please try again.';
+              _adding = false;
+            });
+          }
+          return;
+        }
+      }
+
       if (_orderId == null) {
         final response = await _orderService.createOrder(
           tableNumber: widget.tableNumber,
@@ -136,6 +182,16 @@ class _MenuDetailsScreenState extends State<MenuDetailsScreen>
 
         if (mounted) {
           _showSuccessSnackbar('Order created! Item added successfully 🎉');
+          setState(() {
+            _inlineSuccess = 'Added to order table ${widget.tableNumber}';
+          });
+          Future.delayed(const Duration(milliseconds: 2500), () {
+            if (!mounted) return;
+            setState(() {
+              // Only clear if nothing else has changed it meanwhile.
+              _inlineSuccess = null;
+            });
+          });
         }
 
         if (widget.orderId == null && _orderId != null) {
@@ -160,6 +216,15 @@ class _MenuDetailsScreenState extends State<MenuDetailsScreen>
 
         if (mounted) {
           _showSuccessSnackbar('Item added to your order! ✓');
+          setState(() {
+            _inlineSuccess = 'Added to order table ${widget.tableNumber}';
+          });
+          Future.delayed(const Duration(milliseconds: 2500), () {
+            if (!mounted) return;
+            setState(() {
+              _inlineSuccess = null;
+            });
+          });
         }
       }
 
@@ -562,6 +627,7 @@ class _MenuDetailsScreenState extends State<MenuDetailsScreen>
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (_error != null)
             Container(
@@ -595,6 +661,15 @@ class _MenuDetailsScreenState extends State<MenuDetailsScreen>
                 ],
               ),
             ),
+          const Text(
+            'Quantity',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 6),
           Row(
             children: [
               // Quantity Controls
@@ -639,6 +714,25 @@ class _MenuDetailsScreenState extends State<MenuDetailsScreen>
               ),
             ],
           ),
+          const SizedBox(height: 8),
+          Text(
+            'Total: \$${totalPrice.toStringAsFixed(2)}',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.85),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          if (_inlineSuccess != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              _inlineSuccess!,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 11,
+              ),
+            ),
+          ],
         ],
       ),
     );

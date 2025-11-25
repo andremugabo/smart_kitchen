@@ -25,7 +25,12 @@ export const listPayments = async ({ page = 1, limit = 20, order_id } = {}) => {
 
 export const getPayment = async (id) => {
   const item = await Payment.findByPk(id, {
-    include: [{ model: Order }],
+    include: [
+      {
+        model: Order,
+        include: [User],
+      },
+    ],
   });
   if (!item) throw new Error("Payment not found");
   return item;

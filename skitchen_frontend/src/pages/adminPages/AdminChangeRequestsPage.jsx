@@ -102,7 +102,7 @@ const AdminChangeRequestsPage = () => {
                     const detail = r.OrderDetail || {};
                     const orderId = r.order_id;
                     const orderRef = orderId
-                      ? `ORD-${String(orderId).slice(0, 8).toUpperCase()}`
+                      ? `ORD-${String(orderId).slice(0, 4).toUpperCase()}`
                       : "-";
                     const typeLabel =
                       r.type === "void_order"

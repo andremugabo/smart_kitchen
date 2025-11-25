@@ -13,3 +13,15 @@ export const markNotificationRead = async (id) => {
   await item.update({ is_read: true });
   return item;
 };
+
+export const markAllNotificationsRead = async (userId) => {
+  await Notification.update(
+    { is_read: true },
+    {
+      where: {
+        user_id: userId,
+        is_read: false,
+      },
+    }
+  );
+};

@@ -27,14 +27,26 @@ class ReportService {
     throw Exception('Invalid sales summary response');
   }
 
-  Future<Map<String, dynamic>> getMenuPerformance() async {
+  Future<Map<String, dynamic>> getMenuPerformance({DateTime? from, DateTime? to}) async {
     final token = await AuthStorage.getToken();
     if (token == null || token.isEmpty) {
       throw Exception('Missing token');
     }
 
+    var path = '/reports/menu-performance';
+    if (from != null || to != null) {
+      final params = <String>[];
+      if (from != null) {
+        params.add('from=${from.toIso8601String()}');
+      }
+      if (to != null) {
+        params.add('to=${to.toIso8601String()}');
+      }
+      path = '$path?${params.join('&')}';
+    }
+
     final response = await _api.get(
-      '/reports/menu-performance',
+      path,
       headers: {
         'Authorization': 'Bearer $token',
       },

@@ -70,7 +70,7 @@ const WaiterDashboard = () => {
                     onClick={() => navigate(`/app/waiter/orders/${o.id}`)}
                   >
                     <div className="flex justify-between">
-                      <span>Order #{o.id}</span>
+                      <span>{`ORD-${String(o.id).slice(0, 4).toUpperCase()}`}</span>
                       <span className="text-slate-300">
                         Table {o.tableNumber ?? "-"}
                       </span>

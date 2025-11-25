@@ -49,16 +49,16 @@ const Topbar = ({ onMenuClick }) => {
   })();
 
   return (
-    <header className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-950/80 backdrop-blur">
+    <header className="flex items-center justify-between px-4 py-3 border-b border-[#2A2F45] bg-[#000014]/80 backdrop-blur">
       <div className="flex items-center gap-3">
         <button
-          className="lg:hidden p-2 rounded-md hover:bg-slate-800"
+          className="lg:hidden p-2 rounded-md hover:bg-[#1A1F2D]"
           onClick={onMenuClick}
           aria-label="Toggle sidebar menu"
         >
           <Menu className="w-5 h-5 text-slate-200" />
         </button>
-        <div className="hidden lg:flex items-center gap-2 text-sm text-slate-300">
+        <div className="hidden lg:flex items-center gap-2 text-sm text-[#9CA3AF]">
           {companyLogoUrl && (
             <img
               src={companyLogoUrl}
@@ -67,11 +67,11 @@ const Topbar = ({ onMenuClick }) => {
             />
           )}
           <div className="flex flex-col">
-            <span className="text-xs font-semibold text-slate-100">
+            <span className="text-xs font-semibold text-white">
               {companyName}
             </span>
-            <span className="text-[11px] text-slate-400">
-              {roleLabel && <span className="text-emerald-400 mr-1">{roleLabel}</span>}
+            <span className="text-[11px] text-[#9CA3AF]">
+              {roleLabel && <span className="text-[#00E676] mr-1">{roleLabel}</span>}
               Dashboard
             </span>
           </div>
@@ -81,7 +81,7 @@ const Topbar = ({ onMenuClick }) => {
       <div className="flex items-center gap-3 text-xs">
         {user && (
           <>
-            <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-700">
+            <div className="w-8 h-8 rounded-full bg-[#1A1F2D] flex items-center justify-center overflow-hidden border border-[#2A2F45]">
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
@@ -89,17 +89,17 @@ const Topbar = ({ onMenuClick }) => {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <span className="text-[11px] text-slate-300 font-semibold">
+                <span className="text-[11px] text-[#9CA3AF] font-semibold">
                   {initials || "U"}
                 </span>
               )}
             </div>
             <div className="text-right">
-              <div className="font-medium text-slate-100 truncate max-w-[140px]">
+              <div className="font-medium text-white truncate max-w-[140px]">
                 {user.username || user.email || "User"}
               </div>
               {roleLabel && (
-                <div className="text-[11px] text-slate-400">{roleLabel}</div>
+                <div className="text-[11px] text-[#9CA3AF]">{roleLabel}</div>
               )}
             </div>
           </>

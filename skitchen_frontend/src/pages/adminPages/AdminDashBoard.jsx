@@ -44,7 +44,13 @@ const AdminDashBoard = () => {
       ]);
 
       setSalesSummary(salesRes.data?.data ?? null);
-      setMenuPerformance(menuRes.data?.data ?? []);
+      const rawMenuPerf = menuRes.data?.data;
+      const menuItems = Array.isArray(rawMenuPerf)
+        ? rawMenuPerf
+        : Array.isArray(rawMenuPerf?.items)
+        ? rawMenuPerf.items
+        : [];
+      setMenuPerformance(menuItems);
       setPurchaseSummary(purchaseRes.data?.data ?? null);
       setSalesOverTime(overTimeRes.data?.data ?? []);
       setPaymentSummary(paymentsSummaryRes.data?.data ?? null);
@@ -288,7 +294,7 @@ const AdminDashBoard = () => {
 
             <Card title="Menu Performance Chart" className="lg:col-span-2">
               {Array.isArray(menuPerformance) && menuPerformance.length > 0 ? (
-                <div className="w-full h-80">
+                <div className="w-full h-80" style={{ minWidth: 0 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={menuPerformance.slice(0, 10)}
@@ -328,7 +334,7 @@ const AdminDashBoard = () => {
             <Card title="Revenue by Payment Method">
               {paymentSummary && paymentSummary.revenueByMethod && 
               Object.keys(paymentSummary.revenueByMethod).length > 0 ? (
-                <div className="w-full h-80">
+                <div className="w-full h-80" style={{ minWidth: 0 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={Object.entries(paymentSummary.revenueByMethod).map(
@@ -377,7 +383,7 @@ const AdminDashBoard = () => {
 
             <Card title="Orders by Status">
               {paymentSummary && paymentSummary.ordersByStatus ? (
-                <div className="w-full h-80">
+                <div className="w-full h-80" style={{ minWidth: 0 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={Object.entries(paymentSummary.ordersByStatus).map(
@@ -438,7 +444,7 @@ const AdminDashBoard = () => {
                     .toLocaleString()}
                 </span>
               </div>
-              <div className="w-full h-80">
+              <div className="w-full h-80" style={{ minWidth: 0 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
                     data={salesOverTime}

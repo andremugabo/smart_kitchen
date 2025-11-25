@@ -154,10 +154,10 @@ const AdminPaymentsPage = () => {
                 <tbody>
                   {filtered.map((p) => {
                     const order = p.Order;
-                    const paymentRef = `PAY-${String(p.id).slice(0, 8).toUpperCase()}`;
+                    const paymentRef = `PAY-${String(p.id).slice(0, 4).toUpperCase()}`;
                     const orderRef = order
-                      ? `ORD-${String(order.id).slice(0, 8).toUpperCase()}`
-                      : `ORD-${String(p.order_id).slice(0, 8).toUpperCase()}`;
+                      ? `ORD-${String(order.id).slice(0, 4).toUpperCase()}`
+                      : `ORD-${String(p.order_id).slice(0, 4).toUpperCase()}`;
                     const customerName = order && order.User
                       ? order.User.username || order.User.name || order.User.full_name || order.User.email
                       : null;

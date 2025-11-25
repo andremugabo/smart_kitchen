@@ -98,9 +98,50 @@ const WaiterOrderDetailsPage = () => {
   const canAddItems =
     status !== "served" && status !== "completed" && status !== "canceled";
 
+  const shortRef = order
+    ? `ORD-${String(order.id).slice(0, 4).toUpperCase()}`
+    : `#${id}`;
+
+  const handleAddItem = async (e) => {
+    e.preventDefault();
+    if (!order?.id) return;
+    const quantityNum = Number(addQuantity || 0);
+    if (!addMenuId || !quantityNum || Number.isNaN(quantityNum) || quantityNum <= 0) {
+      setError("Select a menu and enter a valid quantity.");
+      return;
+    }
+
+    setError("");
+    setAdding(true);
+    try {
+      await api.post(`/orders/${order.id}/items`, {
+        items: [
+          {
+            menu_id: addMenuId,
+            quantity: quantityNum,
+            kitchen_note: addNote || undefined,
+          },
+        ],
+      });
+
+      // Reload order details so the new item appears
+      const res = await api.get(`/orders/${id}`);
+      setOrder(res.data?.data || null);
+
+      setAddMenuId("");
+      setAddQuantity("1");
+      setAddNote("");
+    } catch (err) {
+      const msg = err?.response?.data?.error || "Failed to add item";
+      setError(msg);
+    } finally {
+      setAdding(false);
+    }
+  };
+
   return (
     <PageShell
-      title={`Order #${id}`}
+      title={`Order ${shortRef}`}
       subtitle="View your order items as cards."
     >
       {error && <Alert variant="error">{error}</Alert>}

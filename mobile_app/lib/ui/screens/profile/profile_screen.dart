@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile_app/services/api_client.dart';
 
 class ProfileTabContent extends StatefulWidget {
   const ProfileTabContent({
@@ -101,6 +102,17 @@ class _ProfileTabContentState extends State<ProfileTabContent>
     } catch (e) {
       return 'Recently';
     }
+  }
+
+  String _resolvePictureUrl(String? picture) {
+    if (picture == null || picture.isEmpty) return '';
+    if (picture.startsWith('http')) return picture;
+    const rawBase = ApiClient.baseUrl;
+    final base = rawBase.endsWith('/api')
+        ? rawBase.substring(0, rawBase.length - 4)
+        : rawBase;
+    final cleaned = picture.replaceFirst(RegExp(r'^/'), '');
+    return '$base/$cleaned';
   }
 
   @override
@@ -236,12 +248,12 @@ class _ProfileTabContentState extends State<ProfileTabContent>
                 clipBehavior: Clip.antiAlias,
                 child: widget.pictureUrl != null && widget.pictureUrl!.isNotEmpty
                     ? Image.network(
-                  widget.pictureUrl!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return _buildAvatarInitials(initials);
-                  },
-                )
+                        _resolvePictureUrl(widget.pictureUrl),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildAvatarInitials(initials);
+                        },
+                      )
                     : _buildAvatarInitials(initials),
               ),
               if (widget.isActive != null)
@@ -363,6 +375,21 @@ class _ProfileTabContentState extends State<ProfileTabContent>
             widget.isActive == true
                 ? const Color(0xFF10B981)
                 : const Color(0xFFEF4444),
+          ),
+          const SizedBox(height: 24),
+          ListTile(
+            leading: const Icon(Icons.notifications_none, color: Colors.white70),
+            title: const Text(
+              'Notifications',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            trailing: const Icon(Icons.chevron_right, color: Colors.white38),
+            onTap: () {
+              Navigator.of(context).pushNamed('/notifications');
+            },
           ),
         ],
       ),
@@ -657,7 +684,9 @@ class _ProfileTabContentState extends State<ProfileTabContent>
             Icons.lock_outline,
             'Change Password',
             'Update your password',
-                () {},
+                () {
+              Navigator.of(context).pushNamed('/change-password');
+            },
           ),
           const Divider(color: Color(0xFF334155), height: 1),
           _buildSettingsTile(

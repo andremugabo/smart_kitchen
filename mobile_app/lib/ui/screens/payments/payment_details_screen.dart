@@ -14,6 +14,18 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
   final PaymentService _paymentService = PaymentService();
   late Future<Map<String, dynamic>> _futurePayment;
 
+  String _formatOrderCode(String id) {
+    if (id.isEmpty) return 'ORD-????';
+    final core = id.length > 4 ? id.substring(0, 4) : id;
+    return 'ORD-${core.toUpperCase()}';
+  }
+
+  String _formatPaymentCode(String id) {
+    if (id.isEmpty) return 'PAY-????';
+    final core = id.length > 4 ? id.substring(0, 4) : id;
+    return 'PAY-${core.toUpperCase()}';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -22,13 +34,19 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold
-      (
+    return Scaffold(
       backgroundColor: const Color(0xFF020617),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Payment Details'),
+        toolbarHeight: 48,
+        title: const Text(
+          'Payment details',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _futurePayment,
@@ -71,11 +89,71 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
           final orderId = p['order_id']?.toString();
           final dateRaw = p['payment_date']?.toString() ?? '';
 
+          final orderData = p['Order'] as Map<String, dynamic>?;
+          final table = orderData?['table_number']?.toString();
+          final userData = orderData?['User'] as Map<String, dynamic>?;
+          String? customerName;
+          if (userData != null) {
+            customerName = (userData['username'] ??
+                    userData['name'] ??
+                    userData['full_name'] ??
+                    userData['email'])
+                ?.toString();
+          }
+
+          final paymentCode = _formatPaymentCode(id);
+
+          String dateDisplay = dateRaw;
+          if (dateRaw.isNotEmpty) {
+            try {
+              final dt = DateTime.parse(dateRaw).toLocal();
+              String two(int v) => v.toString().padLeft(2, '0');
+              dateDisplay =
+                  '${dt.year}-${two(dt.month)}-${two(dt.day)} ${two(dt.hour)}:${two(dt.minute)}';
+            } catch (_) {
+              dateDisplay = dateRaw;
+            }
+          }
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.08),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.payments_rounded,
+                        size: 14,
+                        color: Colors.white.withOpacity(0.72),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          '$paymentCode · ${status.isEmpty ? 'Status' : status}',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -96,13 +174,24 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Payment $id',
+                        paymentCode,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
+                      if (customerName != null && customerName.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          'By $customerName${table != null && table.isNotEmpty ? ' · Table $table' : ''}',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.7),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 12),
                       Row(
                         children: [
@@ -110,7 +199,7 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              dateRaw,
+                              dateDisplay,
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.7),
                                 fontSize: 12,
@@ -127,7 +216,7 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
                 _buildInfoRow('Amount', amount),
                 _buildInfoRow('Method', method),
                 if (orderId != null) ...[
-                  _buildInfoRow('Order ID', orderId),
+                  _buildInfoRow('Order', _formatOrderCode(orderId)),
                   const SizedBox(height: 8),
                   SizedBox(
                     width: double.infinity,

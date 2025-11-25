@@ -171,8 +171,8 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                         // Logo container
                         Container(
-                          width: 96,
-                          height: 96,
+                          width: 112,
+                          height: 112,
                           decoration: BoxDecoration(
                             color: const Color(0xFF1E293B),
                             shape: BoxShape.circle,
@@ -191,7 +191,7 @@ class _SplashScreenState extends State<SplashScreen>
                           clipBehavior: Clip.antiAlias,
                           child: Image.asset(
                             'assets/images/logo.png',
-                            fit: BoxFit.cover,
+                            fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) {
                               return const Icon(
                                 Icons.restaurant,

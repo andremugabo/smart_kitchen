@@ -31,4 +31,22 @@ class NotificationService {
 
     throw Exception('Invalid notifications response');
   }
+
+  /// Mark all notifications for the current user as read.
+  /// Uses PATCH /notifications/user/:userId/mark-all-read
+  /// and the Authorization header to identify the user.
+  Future<void> markAllAsRead() async {
+    final token = await AuthStorage.getToken();
+    final userId = await AuthStorage.getUserId();
+    if (token == null || token.isEmpty || userId == null || userId.isEmpty) {
+      throw Exception('Missing token or user id');
+    }
+
+    await _api.post(
+      '/notifications/user/$userId/mark-all-read',
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
 }

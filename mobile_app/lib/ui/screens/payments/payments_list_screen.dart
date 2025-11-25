@@ -16,6 +16,12 @@ class _PaymentsListScreenState extends State<PaymentsListScreen> {
   String? _role;
   String _statusFilter = 'all';
 
+  String _formatPaymentCode(String id) {
+    if (id.isEmpty) return 'PAY-????';
+    final core = id.length > 4 ? id.substring(0, 4) : id;
+    return 'PAY-${core.toUpperCase()}';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -35,22 +41,34 @@ class _PaymentsListScreenState extends State<PaymentsListScreen> {
   Widget build(BuildContext context) {
     final normalized = _role?.toLowerCase();
 
-    if (normalized != null && normalized != 'admin' && normalized != 'manager') {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24.0),
-          child: Text(
-            'Payments are only available for manager/admin accounts.',
-            style: TextStyle(color: Colors.white70),
-            textAlign: TextAlign.center,
+    return Scaffold(
+      backgroundColor: const Color(0xFF020617),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        toolbarHeight: 48,
+        title: const Text(
+          'Payments',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
           ),
         ),
-      );
-    }
-
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: _futurePayments,
-      builder: (context, snapshot) {
+      ),
+      body: (normalized != null && normalized != 'admin' && normalized != 'manager')
+          ? const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24.0),
+                child: Text(
+                  'Payments are only available for manager/admin accounts.',
+                  style: TextStyle(color: Colors.white70),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            )
+          : FutureBuilder<List<Map<String, dynamic>>>(
+              future: _futurePayments,
+              builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
             child: CircularProgressIndicator(
@@ -125,6 +143,22 @@ class _PaymentsListScreenState extends State<PaymentsListScreen> {
                   final amount = (p['amount'] ?? 0).toString();
                   final method = p['method']?.toString() ?? '-';
                   final status = p['status']?.toString() ?? '-';
+                  final paymentCode = _formatPaymentCode(id);
+                  final dateRaw = p['payment_date']?.toString() ?? '';
+                  final orderData = p['Order'] as Map<String, dynamic>?;
+                  final table = orderData?['table_number']?.toString();
+
+                  String dateDisplay = dateRaw;
+                  if (dateRaw.isNotEmpty) {
+                    try {
+                      final dt = DateTime.parse(dateRaw).toLocal();
+                      String two(int v) => v.toString().padLeft(2, '0');
+                      dateDisplay =
+                          '${dt.year}-${two(dt.month)}-${two(dt.day)} ${two(dt.hour)}:${two(dt.minute)}';
+                    } catch (_) {
+                      dateDisplay = dateRaw;
+                    }
+                  }
 
                   return ListTile(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -138,7 +172,7 @@ class _PaymentsListScreenState extends State<PaymentsListScreen> {
                       );
                     },
                     title: Text(
-                      'Payment $id',
+                      paymentCode,
                       style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
                     ),
                     subtitle: Row(
@@ -147,7 +181,12 @@ class _PaymentsListScreenState extends State<PaymentsListScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Amount: $amount  •  $method',
+                            [
+                              'Amount: $amount',
+                              method,
+                              if (table != null && table.isNotEmpty) 'Table $table',
+                              if (dateDisplay.isNotEmpty) dateDisplay,
+                            ].join('  •  '),
                             style: TextStyle(color: Colors.white.withOpacity(0.7)),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -163,6 +202,7 @@ class _PaymentsListScreenState extends State<PaymentsListScreen> {
           ],
         );
       },
+      ),
     );
   }
 

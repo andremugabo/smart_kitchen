@@ -74,4 +74,30 @@ class UserService {
       message: decoded['error']?.toString() ?? 'Request failed',
     );
   }
+
+  Future<void> updatePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    final userId = await AuthStorage.getUserId();
+    final token = await AuthStorage.getToken();
+
+    if (userId == null || userId.isEmpty || token == null || token.isEmpty) {
+      throw Exception('Missing user id or token');
+    }
+
+    final body = jsonEncode({
+      'oldPassword': oldPassword,
+      'newPassword': newPassword,
+    });
+
+    await _api.put(
+      '/users/$userId/password',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: body,
+    );
+  }
 }

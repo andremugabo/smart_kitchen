@@ -50,4 +50,32 @@ class PaymentService {
 
     throw Exception('Invalid payment response');
   }
+
+  Future<Map<String, dynamic>> createPayment({
+    required String orderId,
+    required double amount,
+    required String method,
+    String status = 'paid',
+  }) async {
+    final token = await AuthStorage.getToken();
+    if (token == null || token.isEmpty) {
+      throw Exception('Missing token');
+    }
+
+    final response = await _api.post(
+      '/payments',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: '{"order_id":"$orderId","amount":$amount,"method":"$method","status":"$status"}',
+    );
+
+    final data = response['data'];
+    if (data is Map<String, dynamic>) {
+      return Map<String, dynamic>.from(data);
+    }
+
+    throw Exception('Invalid create payment response');
+  }
 }

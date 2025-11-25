@@ -35,6 +35,12 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
   double? _orderSubtotal;
   bool _loadingSummary = false;
 
+  String _formatOrderCode(String id) {
+    if (id.isEmpty) return 'ORD-????';
+    final core = id.length > 4 ? id.substring(0, 4) : id;
+    return 'ORD-${core.toUpperCase()}';
+  }
+
   String _resolvePictureUrl(String? picture) {
     if (picture == null || picture.isEmpty) return '';
     if (picture.startsWith('http')) return picture;
@@ -284,7 +290,7 @@ class _MenuScreenState extends State<MenuScreen> with SingleTickerProviderStateM
                         if (!browseOnly && _orderId != null) ...[
                           const SizedBox(height: 2),
                           Text(
-                            'Order ID: $_orderId',
+                            '${_formatOrderCode(_orderId!)} · Table ${widget.tableNumber ?? '-'}',
                             style: TextStyle(
                               color: Colors.white.withOpacity(0.6),
                               fontSize: 11,

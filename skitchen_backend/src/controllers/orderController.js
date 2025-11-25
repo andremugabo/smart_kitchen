@@ -108,12 +108,22 @@ export const generateOrderReceiptPdfController = async (req, res) => {
       .stroke("#dddddd");
     doc.moveDown(0.5);
 
+    const formatOrderCode = (id) => {
+      if (!id) return "ORD-????";
+      const core = id.length > 4 ? id.substring(0, 4) : id;
+      return `ORD-${core.toUpperCase()}`;
+    };
+
     doc.fontSize(10).fillColor("#000000");
-    doc.text(`Order ID: ${order.id}`);
+    doc.text(`Order: ${formatOrderCode(order.id)}`);
     if (order.User) {
-      const name = order.User.username || order.User.name || order.User.full_name || order.User.email;
+      const name =
+        order.User.username ||
+        order.User.name ||
+        order.User.full_name ||
+        order.User.email;
       if (name) {
-        doc.text(`Customer: ${name}`);
+        doc.text(`Waiter: ${name}`);
       }
     }
     if (order.table_number) {

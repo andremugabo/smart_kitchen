@@ -6,7 +6,7 @@ export default (sequelize, DataTypes) => {
       username: { type: DataTypes.STRING(50), allowNull: false, unique: true },
       password_hash: { type: DataTypes.STRING(255), allowNull: false },
       role: {
-        type: DataTypes.ENUM("admin", "chef", "manager", "waiter"),
+        type: DataTypes.ENUM("admin", "chef", "manager", "waiter", "cashier"),
         allowNull: false,
       },
       email: { type: DataTypes.STRING(100), unique: true },
