@@ -40,7 +40,11 @@ app.use(express.json());
 
 // Dynamic CORS (Render + Local)
 app.use(cors({
-    origin: process.env.FRONTEND_ORIGIN,
+    origin: [
+        'http://localhost:5173',                  
+        'https://smart-kitchen-glck.onrender.com',
+        'https://smart-kitchen-frontend-xz1e.onrender.com' 
+    ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
 }));

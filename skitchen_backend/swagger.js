@@ -5,7 +5,7 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: { title: 'Backend API', version: '1.0.0', description: 'Smart Kitchen  APIs' },
-    servers: [{ url: 'http://localhost:3000' }],
+    servers: [{ url: 'http://localhost:3000' },{ url: 'https://smart-kitchen-glck.onrender.com' }],
     components: {
       securitySchemes: { bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' } },
     },
