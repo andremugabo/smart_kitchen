@@ -117,11 +117,41 @@ public class WaiterDashboardView extends javax.swing.JFrame {
         lblOpenOrders = new JLabel("Open Orders: 0");
 
         JPanel navPanel = new JPanel();
-        JButton btnNavDashboard = new JButton("Dashboard");
-        JButton btnNavMyTables = new JButton("My Tables");
-        JButton btnNavOpenOrders = new JButton("Open Orders");
-        JButton btnNavBills = new JButton("Bills");
-        JButton btnNavSettings = new JButton("Settings");
+        JButton btnNavDashboard = new JButton("Dashboard") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
+        JButton btnNavMyTables = new JButton("My Tables") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
+        JButton btnNavOpenOrders = new JButton("Open Orders") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
+        JButton btnNavBills = new JButton("Bills") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
+        JButton btnNavSettings = new JButton("Settings") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
 
         javax.swing.GroupLayout navLayout = new javax.swing.GroupLayout(navPanel);
         navPanel.setLayout(navLayout);
@@ -202,7 +232,7 @@ public class WaiterDashboardView extends javax.swing.JFrame {
 
         JButton[] navButtons = { btnNavDashboard, btnNavMyTables, btnNavOpenOrders, btnNavBills, btnNavSettings };
         for (JButton b : navButtons) {
-            b.setFocusPainted(false);
+            SmartKitchenTheme.styleGradientButton(b);
         }
 
         btnNavDashboard.addActionListener(e -> loadOrders());

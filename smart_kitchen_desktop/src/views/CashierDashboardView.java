@@ -105,11 +105,41 @@ public class CashierDashboardView extends javax.swing.JFrame {
         );
 
         JPanel navPanel = new JPanel();
-        JButton btnNavDashboard = new JButton("Dashboard");
-        JButton btnNavBills = new JButton("Bills");
-        JButton btnNavPayments = new JButton("Payments");
-        JButton btnNavReports = new JButton("Reports");
-        JButton btnNavSettings = new JButton("Settings");
+        JButton btnNavDashboard = new JButton("Dashboard") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
+        JButton btnNavBills = new JButton("Bills") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
+        JButton btnNavPayments = new JButton("Payments") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
+        JButton btnNavReports = new JButton("Reports") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
+        JButton btnNavSettings = new JButton("Settings") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
 
         javax.swing.GroupLayout navLayout = new javax.swing.GroupLayout(navPanel);
         navPanel.setLayout(navLayout);
@@ -168,7 +198,7 @@ public class CashierDashboardView extends javax.swing.JFrame {
 
         JButton[] navButtons = { btnNavDashboard, btnNavBills, btnNavPayments, btnNavReports, btnNavSettings };
         for (JButton b : navButtons) {
-            b.setFocusPainted(false);
+            SmartKitchenTheme.styleGradientButton(b);
         }
 
         btnNavDashboard.addActionListener(e -> {
@@ -177,13 +207,11 @@ public class CashierDashboardView extends javax.swing.JFrame {
         });
 
         btnNavBills.addActionListener(e -> {
-            javax.swing.JOptionPane.showMessageDialog(this, "TODO: Bills screen", "Not implemented",
-                    javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            new CashierBillsView().setVisible(true);
         });
 
         btnNavPayments.addActionListener(e -> {
-            javax.swing.JOptionPane.showMessageDialog(this, "TODO: Payments screen", "Not implemented",
-                    javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            new CashierPaymentsView().setVisible(true);
         });
 
         btnNavReports.addActionListener(e -> {

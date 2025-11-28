@@ -121,11 +121,41 @@ public class ManagerDashboardView extends javax.swing.JFrame {
         lblChefPerf = new JLabel("Chefs in Performance Report: 0");
 
         JPanel navPanel = new JPanel();
-        JButton btnNavDashboard = new JButton("Dashboard");
-        JButton btnNavReports = new JButton("Reports");
-        JButton btnNavPerformance = new JButton("Performance");
-        JButton btnNavMenus = new JButton("Menus");
-        JButton btnNavSettings = new JButton("Settings");
+        JButton btnNavDashboard = new JButton("Dashboard") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
+        JButton btnNavReports = new JButton("Reports") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
+        JButton btnNavPerformance = new JButton("Performance") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
+        JButton btnNavMenus = new JButton("Menus") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
+        JButton btnNavSettings = new JButton("Settings") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
 
         javax.swing.GroupLayout navLayout = new javax.swing.GroupLayout(navPanel);
         navPanel.setLayout(navLayout);
@@ -220,21 +250,26 @@ public class ManagerDashboardView extends javax.swing.JFrame {
 
         JButton[] navButtons = { btnNavDashboard, btnNavReports, btnNavPerformance, btnNavMenus, btnNavSettings };
         for (JButton b : navButtons) {
-            b.setFocusPainted(false);
+            SmartKitchenTheme.styleGradientButton(b);
         }
 
         btnNavDashboard.addActionListener(e -> loadManagerMetrics());
 
         btnNavReports.addActionListener(e -> {
-            javax.swing.JOptionPane.showMessageDialog(this, "TODO: Reports screen", "Not implemented",
-                    javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            new ManagerReportsView().setVisible(true);
         });
 
-        btnNavPerformance.addActionListener(e -> loadManagerMetrics());
+        btnNavPerformance.addActionListener(e -> {
+            new ManagerPerformanceView().setVisible(true);
+        });
 
         btnNavMenus.addActionListener(e -> {
-            javax.swing.JOptionPane.showMessageDialog(this, "TODO: Menus screen", "Not implemented",
-                    javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            if (currentUser != null) {
+                new MenuView(currentUser).setVisible(true);
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(this, "No user context.", "Error",
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
+            }
         });
 
         btnNavSettings.addActionListener(e -> {

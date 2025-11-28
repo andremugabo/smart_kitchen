@@ -105,10 +105,34 @@ public class ChefDashboardView extends javax.swing.JFrame {
         );
 
         JPanel navPanel = new JPanel();
-        JButton btnNavDashboard = new JButton("Dashboard");
-        JButton btnNavOrdersQueue = new JButton("Orders Queue");
-        JButton btnNavDishes = new JButton("Dishes");
-        JButton btnNavSettings = new JButton("Settings");
+        JButton btnNavDashboard = new JButton("Dashboard") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
+        JButton btnNavOrdersQueue = new JButton("Orders Queue") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
+        JButton btnNavDishes = new JButton("Dishes") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
+        JButton btnNavSettings = new JButton("Settings") {
+            @Override
+            protected void paintComponent(java.awt.Graphics g) {
+                SmartKitchenTheme.paintAccentGradient(g, this);
+                super.paintComponent(g);
+            }
+        };
 
         javax.swing.GroupLayout navLayout = new javax.swing.GroupLayout(navPanel);
         navPanel.setLayout(navLayout);
@@ -164,7 +188,7 @@ public class ChefDashboardView extends javax.swing.JFrame {
 
         JButton[] navButtons = { btnNavDashboard, btnNavOrdersQueue, btnNavDishes, btnNavSettings };
         for (JButton b : navButtons) {
-            b.setFocusPainted(false);
+            SmartKitchenTheme.styleGradientButton(b);
         }
 
         btnNavDashboard.addActionListener(e -> {
@@ -173,8 +197,7 @@ public class ChefDashboardView extends javax.swing.JFrame {
         });
 
         btnNavOrdersQueue.addActionListener(e -> {
-            javax.swing.JOptionPane.showMessageDialog(this, "TODO: Orders Queue screen", "Not implemented",
-                    javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            new ChefOrdersQueueView().setVisible(true);
         });
 
         btnNavDishes.addActionListener(e -> {

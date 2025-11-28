@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { Op } from "sequelize";
 import { User } from "../models/index.js";
-import redisClient from "../utils/redisClient.js"; // Redis client
+// import redisClient from "../utils/redisClient.js"; // Redis client
 
 const saltRounds = 10;
 const JWT_SECRET = process.env.JWT_SECRET || "supersecret";

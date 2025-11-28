@@ -74,8 +74,10 @@ public class SmartKitchenTheme {
         if (button == null) return;
         button.setContentAreaFilled(false);
         button.setOpaque(false);
-        button.setBorder(BorderFactory.createLineBorder(BORDER));
-        button.setForeground(BG_DARKEST);
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ACCENT_GREEN),
+                BorderFactory.createEmptyBorder(6, 16, 6, 16)));
+        button.setForeground(TEXT_PRIMARY);
         button.setFocusPainted(false);
     }
 
@@ -85,9 +87,15 @@ public class SmartKitchenTheme {
         try {
             int w = comp.getWidth();
             int h = comp.getHeight();
-            GradientPaint gp = new GradientPaint(0, 0, ACCENT_GREEN, w, 0, ACCENT_YELLOW);
+            // Slightly bias toward green by blending green into the end color
+            Color end = new Color(
+                (ACCENT_GREEN.getRed() + ACCENT_YELLOW.getRed()) / 2,
+                (ACCENT_GREEN.getGreen() + ACCENT_YELLOW.getGreen()) / 2,
+                (ACCENT_GREEN.getBlue() + ACCENT_YELLOW.getBlue()) / 3
+            );
+            GradientPaint gp = new GradientPaint(0, 0, ACCENT_GREEN, w, 0, end);
             g2.setPaint(gp);
-            g2.fillRoundRect(0, 0, w, h, 10, 10);
+            g2.fillRoundRect(0, 0, w, h, 14, 14);
         } finally {
             g2.dispose();
         }

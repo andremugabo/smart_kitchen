@@ -6,7 +6,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import errorHandler from './src/middleware/errorHandler.js';
 
-// Convert __dirname for ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -15,12 +14,11 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Swagger setup
+// Swagger
 import setupSwagger from './swagger.js';
 
-// User routes
+// Routes
 import userRoutes from './src/routes/userRoutes.js';
-// Product modules routes
 import productTypeRoutes from './src/routes/productTypeRoutes.js';
 import productCategoryRoutes from './src/routes/productCategoryRoutes.js';
 import productRoutes from './src/routes/productRoutes.js';
@@ -40,20 +38,20 @@ import orderChangeRequestRoutes from './src/routes/orderChangeRequestRoutes.js';
 
 app.use(express.json());
 
-// Enable CORS for your frontend
+// Dynamic CORS (Render + Local)
 app.use(cors({
-    origin: 'http://localhost:5173', 
+    origin: process.env.FRONTEND_ORIGIN,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    credentials: true, 
+    credentials: true,
 }));
 
-// Serve uploads folder
+// Serve uploads
 app.use('/uploads', express.static(path.join(__dirname,'uploads')));
 
-// Mount Swagger
+// Swagger docs
 setupSwagger(app);
 
-// Mount routes
+// API Routes
 app.use('/api/users', userRoutes);
 app.use('/api/product-types', productTypeRoutes);
 app.use('/api/product-categories', productCategoryRoutes);
@@ -77,6 +75,10 @@ app.get('/', (req, res) => {
     res.send('Smart Kitchen Backend is Healthy !! 💥');
 });
 
+// Error handling
 app.use(errorHandler);
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Start server
+app.listen(PORT, () =>
+    console.log(`Server running on port ${PORT}`)
+);
