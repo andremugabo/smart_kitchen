@@ -63,7 +63,7 @@ jobs:
       with:
         host: ${{ secrets.PRODUCTION_HOST }}
         username: ${{ secrets.PRODUCTION_USERNAME }}
-        key: ${{ secrets.PRODUCTION_SSH_KEY }}
+        key: ${{ secrets.PRODUCTION_SSK_KEY }}
         script: |
           cd /path/to/production
           docker-compose -f docker-compose.prod.yml pull
