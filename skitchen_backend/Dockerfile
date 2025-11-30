@@ -2,18 +2,20 @@ FROM node:18-alpine
 
 WORKDIR /app
 
+# Copy package files
+COPY package*.json ./
+
 # Install dependencies
-COPY package.json yarn.lock ./
-RUN yarn install --production
+RUN npm ci --only=production
 
 # Copy app source
 COPY . .
 
-# Build the app
-RUN yarn build
+# Build the app (if needed)
+# RUN npm run build
 
 # Expose the app port
 EXPOSE 3000
 
 # Start the app
-CMD ["yarn", "start:prod"]
+CMD ["node", "dist/main.js"]
