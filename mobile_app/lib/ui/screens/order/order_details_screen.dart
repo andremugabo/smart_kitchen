@@ -647,7 +647,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                       final qty = d['quantity'] ?? d['qty'] ?? 0;
                       final price = d['price_at_time'] ?? d['price'] ?? 0;
                       final lineTotal = (qty is num && price is num)
-                          ? '\$${(qty * price).toStringAsFixed(2)}'
+                          ? '\Frw ${(qty * price).toStringAsFixed(2)}'
                           : '';
                       final menuData = d['Menu'] as Map<String, dynamic>?;
                       final name = menuData?['name'] ?? d['menu_name'] ?? 'Item';
@@ -703,7 +703,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        'Qty: $qty  •  Price: ${price is num ? '\$${price.toStringAsFixed(2)}' : price}',
+                                        'Qty: $qty  •  Price: ${price is num ? '\Frw ${price.toStringAsFixed(2)}' : price}',
                                         style: TextStyle(
                                           color: Colors.white.withOpacity(0.7),
                                           fontSize: 12,
@@ -834,7 +834,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                           ),
                         ),
                         Text(
-                          '\$$total',
+                          '\Frw $total',
                           style: const TextStyle(
                             color: Color(0xFF34D399),
                             fontSize: 18,

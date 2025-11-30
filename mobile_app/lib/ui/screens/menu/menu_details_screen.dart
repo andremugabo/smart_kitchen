@@ -488,7 +488,7 @@ class _MenuDetailsScreenState extends State<MenuDetailsScreen>
                                     ],
                                   ),
                                   child: Text(
-                                    '\$${menu.price.toStringAsFixed(2)}',
+                                    '\Frw ${menu.price.toStringAsFixed(2)}',
                                     style: const TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold,
@@ -716,7 +716,7 @@ class _MenuDetailsScreenState extends State<MenuDetailsScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            'Total: \$${totalPrice.toStringAsFixed(2)}',
+            'Total: \Frw${totalPrice.toStringAsFixed(2)}',
             style: TextStyle(
               color: Colors.white.withOpacity(0.85),
               fontSize: 13,
@@ -808,7 +808,7 @@ class _MenuDetailsScreenState extends State<MenuDetailsScreen>
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Add • \$${totalPrice.toStringAsFixed(2)}',
+                        'Add • \Frw${totalPrice.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.bold,

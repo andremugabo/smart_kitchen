@@ -93,15 +93,22 @@ export const updatePassword = async (userId, oldPassword, newPassword) => {
   return user;
 };
 
+const otpStore = new Map();
+
 // ---------------------------
-// SEND OTP FOR PASSWORD RESET (Redis)
+// SEND OTP FOR PASSWORD RESET 
 // ---------------------------
 export const sendPasswordResetOtp = async (email) => {
   const user = await User.findOne({ where: { email } });
   if (!user) throw new Error("Email not registered");
 
   const otp = crypto.randomInt(100000, 999999).toString();
-  await redisClient.setEx(`otp:${email}`, 600, otp); // 10 min TTL
+
+  // Save OTP with expiry timestamp
+  otpStore.set(email, {
+    otp,
+    expiresAt: Date.now() + 10 * 60 * 1000, // 10 minutes
+  });
 
   // TODO: send OTP via email
   console.log(`OTP for ${email}: ${otp}`);
@@ -110,21 +117,31 @@ export const sendPasswordResetOtp = async (email) => {
 };
 
 // ---------------------------
-// VERIFY OTP AND RESET PASSWORD (Redis)
+// VERIFY OTP AND RESET PASSWORD 
 // ---------------------------
 export const verifyOtpAndResetPassword = async (email, otp, newPassword) => {
-  const storedOtp = await redisClient.get(`otp:${email}`);
-  if (!storedOtp) throw new Error("OTP expired or not found");
-  if (storedOtp !== otp) throw new Error("Invalid OTP");
+  const record = otpStore.get(email);
+
+  if (!record) throw new Error("OTP expired or not found");
+  if (record.expiresAt < Date.now()) {
+    otpStore.delete(email);
+    throw new Error("OTP expired");
+  }
+
+  if (record.otp !== otp) throw new Error("Invalid OTP");
 
   const user = await User.findOne({ where: { email } });
+
   const hashed = await bcrypt.hash(newPassword, saltRounds);
   user.password_hash = hashed;
   await user.save();
 
-  await redisClient.del(`otp:${email}`);
+  // Remove OTP after successful reset
+  otpStore.delete(email);
+
   return user;
 };
+
 
 // ---------------------------
 // UPDATE PROFILE IMAGE

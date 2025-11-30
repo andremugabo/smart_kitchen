@@ -1009,40 +1009,44 @@ class _DashboardCardState extends State<_DashboardCard> with SingleTickerProvide
               ),
             ],
           ),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(6),
+                margin: const EdgeInsets.only(bottom: 6),
                 decoration: BoxDecoration(
                   color: widget.data.color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   widget.data.icon,
                   color: widget.data.color,
-                  size: 24,
+                  size: 20,
                 ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     widget.data.value,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 24,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
+                      height: 1.0,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 1),
                   Text(
                     widget.data.title,
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.7),
-                      fontSize: 12,
+                      fontSize: 10,
+                      height: 1.1,
                     ),
                   ),
                 ],

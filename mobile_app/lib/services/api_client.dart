@@ -8,7 +8,8 @@ class ApiClient {
   final http.Client _client;
 
   // TODO: consider moving this to a config file or env.
-  static const String baseUrl = 'http://localhost:3000/api';
+  // static const String baseUrl = 'http://localhost:3000/api';
+  static const String baseUrl = 'https://smart-kitchen-glck.onrender.com/api';
 
   Future<Map<String, dynamic>> post(
     String path, {

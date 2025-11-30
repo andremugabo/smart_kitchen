@@ -791,7 +791,7 @@ class _MenuCardState extends State<_MenuCard> with SingleTickerProviderStateMixi
                                   ],
                                 ),
                                 child: Text(
-                                  '\$${widget.menu.price.toStringAsFixed(2)}',
+                                  '\Frw${widget.menu.price.toStringAsFixed(2)}',
                                   style: const TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w600,
