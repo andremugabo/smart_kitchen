@@ -4,9 +4,9 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "test": "jest --detectOpenHandles --forceExit",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
+    "test": "NODE_ENV=test jest --detectOpenHandles --forceExit",
+    "test:watch": "NODE_ENV=test jest --watch",
+    "test:coverage": "NODE_ENV=test jest --coverage",
     "start": "node server.js",
     "dev": "nodemon server.js",
     "sync": "node sync.js",
@@ -36,17 +36,26 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "esm": "^3.2.25",
     "jest": "^29.7.0",
-    "supertest": "^6.3.3",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "supertest": "^6.3.3"
   },
   "jest": {
     "testEnvironment": "node",
-    "coveragePathIgnorePatterns": [
-      "/node_modules/"
+    "transform": {},
+    "transformIgnorePatterns": [
+      "node_modules/(?!(.*\\.mjs$|@?.*))"
     ],
+    "globals": {
+      "esm": true
+    },
+    "moduleFileExtensions": ["js", "mjs"],
     "testMatch": [
       "**/__tests__/**/*.test.js"
+    ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/test-setup.js"
     ]
   }
 }
